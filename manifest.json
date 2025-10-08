@@ -1,12 +1,24 @@
 {
-  "name": "FinanceFlowPro",
-  "short_name": "FFPro",
-  "start_url": "/financeflowpro/",
+  "name": "Finance Flow",
+  "short_name": "FinanceFlow",
+  "description": "Modern AI-powered financial management app",
+  "start_url": "/",
   "display": "standalone",
-  "background_color": "#0b1220",
+  "background_color": "#4361EE",
   "theme_color": "#4361EE",
+  "orientation": "portrait",
   "icons": [
-    { "src": "assets/icon-192.png", "sizes": "192x192", "type": "image/png" },
-    { "src": "assets/icon-512.png", "sizes": "512x512", "type": "image/png" }
-  ]
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "categories": ["finance", "productivity"],
+  "lang": "en-US"
 }
