@@ -29,7 +29,7 @@
         </div>
         <div class="dropdown">
           <button class="btn p-0 border-0" type="button" id="profileDropdown" data-bs-toggle="dropdown">
-            <div class="profile-pic">
+            <div class="profile-pic" id="profilePicture">
               <i class="bi bi-person-circle"></i>
             </div>
           </button>
@@ -137,6 +137,19 @@
         </div>
       </div>
 
+      <!-- Month/Year Filter -->
+      <div class="row g-3 mb-3">
+        <div class="col-md-6">
+          <select id="summaryMonth" class="form-select form-glass">
+            <option value="all">All Months</option>
+          </select>
+        </div>
+        <div class="col-md-6">
+          <select id="summaryYear" class="form-select form-glass">
+            <option value="all">All Years</option>
+          </select>
+        </div>
+      </div>
       
       <!-- Income and Expense Breakdown -->
       <div class="breakdown-container">
@@ -150,7 +163,7 @@
                 <div id="incomeBreakdown">
                   <!-- Income categories will appear here -->
                 </div>
-                <div id="noIncomeCategories" class="text-center text-muted p-2">No income categories</div>
+                <div id="noIncomeCategories" class="text-center text-muted p-2 d-none">No income categories</div>
               </div>
             </div>
           </div>
@@ -163,7 +176,7 @@
                 <div id="expenseBreakdown">
                   <!-- Expense categories will appear here -->
                 </div>
-                <div id="noExpenseCategories" class="text-center text-muted p-2">No expense categories</div>
+                <div id="noExpenseCategories" class="text-center text-muted p-2 d-none">No expense categories</div>
               </div>
             </div>
           </div>
@@ -225,7 +238,7 @@
                 <div class="health-score-header">
                   <i class="bi bi-heart-pulse"></i> Financial Health
                 </div>
-                <div class="health-score-value" id="analyticsHealthScore">--</div>
+                <div class="health-score-value" id="healthScore">--</div>
                 <div class="health-score-label" id="healthScoreLabel">Calculating...</div>
               </div>
             </div>
@@ -248,7 +261,7 @@
                 <div class="ai-recommendations-header">
                   <i class="bi bi-robot"></i> AI Insights
                 </div>
-                <div id="analyticsQuickInsights" class="ai-quick-insights">
+                <div id="aiQuickInsights" class="ai-quick-insights">
                   <div class="text-center text-muted">
                     <small>Analyzing your spending patterns...</small>
                   </div>
@@ -335,7 +348,7 @@
                     <div id="riskAlerts" class="risk-alerts-container">
                       <!-- Risk alerts will be populated here -->
                     </div>
-                    <div id="noRiskAlerts" class="chart-placeholder">
+                    <div id="noRiskAlerts" class="chart-placeholder d-none">
                       <i class="bi bi-check-circle" style="font-size: 2rem; opacity: 0.5;"></i>
                       <p class="mt-2">No spending risks detected</p>
                     </div>
@@ -440,7 +453,7 @@
                     <div id="changeAnalysis" class="change-analysis-container">
                       <!-- Change analysis will be populated here -->
                     </div>
-                    <div id="noChangeAnalysis" class="chart-placeholder">
+                    <div id="noChangeAnalysis" class="chart-placeholder d-none">
                       <i class="bi bi-arrow-left-right" style="font-size: 3rem; opacity: 0.5;"></i>
                       <p class="mt-2">Compare periods to see changes</p>
                     </div>
@@ -464,13 +477,13 @@
           <div class="row mb-4">
             <div class="col-12">
               <div class="btn-group w-100" role="group">
-                <button type="button" class="btn btn-outline-primary planner-timeframe-btn active" data-timeframe="1year">
+                <button type="button" class="btn btn-outline-primary planner-timeframe-btn active" onclick="changePlannerTimeframe('1year')">
                   1 Year
                 </button>
-                <button type="button" class="btn btn-outline-primary planner-timeframe-btn" data-timeframe="2years">
+                <button type="button" class="btn btn-outline-primary planner-timeframe-btn" onclick="changePlannerTimeframe('2years')">
                   2 Years
                 </button>
-                <button type="button" class="btn btn-outline-primary planner-timeframe-btn" data-timeframe="3years">
+                <button type="button" class="btn btn-outline-primary planner-timeframe-btn" onclick="changePlannerTimeframe('3years')">
                   3 Years
                 </button>
               </div>
@@ -670,7 +683,7 @@
           <div class="mb-3">
             <label class="form-label">Cloud Sync</label>
             <div class="d-flex gap-2 mb-2">
-              <button id="manualSyncSettings" class="btn btn-outline-primary btn-sm">
+              <button id="manualSyncSettings" class="btn btn-outline-primary btn-sm" onclick="manualSync()">
                 <i class="bi bi-cloud-arrow-up"></i> Sync Now
               </button>
               <small class="text-muted ms-2" id="syncStatusText">
@@ -706,7 +719,7 @@
 
           <!-- Category Management -->
           <div>
-            <button id="toggleCategorySettings" class="btn btn-outline-secondary w-100 mb-2" type="button">
+            <button id="toggleCategorySettings" class="btn btn-outline-secondary w-100 mb-2" type="button" data-bs-toggle="collapse" data-bs-target="#categorySettingsPanel">
               <span id="catCollapseIcon"><i class="bi bi-chevron-right"></i></span> Category Settings
             </button>
             <div id="categorySettingsPanel" class="collapse">
@@ -727,10 +740,18 @@
           <div>
             <label class="form-label">Import / Export Transactions</label>
             <div class="mb-2">
-              <button id="exportBtn" class="btn btn-outline-success btn-sm"><i class="bi bi-download"></i> Export</button>
-              <input type="file" id="importFile" accept=".json" style="display:none;">
-              <button id="importBtn" class="btn btn-outline-primary btn-sm"><i class="bi bi-upload"></i> Import</button>
+              <button id="exportBtn" class="btn btn-outline-success btn-sm" onclick="exportData()"><i class="bi bi-download"></i> Export</button>
+              <input type="file" id="importFile" accept=".json" style="display:none;" onchange="importData(event)">
+              <button id="importBtn" class="btn btn-outline-primary btn-sm" onclick="document.getElementById('importFile').click()"><i class="bi bi-upload"></i> Import</button>
             </div>
+          </div>
+          <hr>
+
+          <!-- Reset Data -->
+          <div>
+            <button class="btn btn-outline-danger btn-sm" onclick="resetAppData()">
+              <i class="bi bi-trash"></i> Reset All Data
+            </button>
           </div>
         </div>
       </div>
@@ -739,27 +760,27 @@
 
   <!-- Enhanced Bottom Navigation -->
   <nav class="bottom-nav">
-    <button class="nav-btn active" data-tab="dashboard">
+    <button class="nav-btn active" data-tab="dashboard" onclick="showTab('dashboard')">
       <i class="bi bi-house"></i>
       <span>Dashboard</span>
     </button>
-    <button class="nav-btn" data-tab="transactions">
+    <button class="nav-btn" data-tab="transactions" onclick="showTab('transactions')">
       <i class="bi bi-list-ul"></i>
       <span>Transactions</span>
     </button>
-    <button class="nav-btn" data-tab="analytics">
+    <button class="nav-btn" data-tab="analytics" onclick="showTab('analytics')">
       <i class="bi bi-graph-up"></i>
       <span>Analytics</span>
     </button>
-    <button class="nav-btn" data-tab="planner">
+    <button class="nav-btn" data-tab="planner" onclick="showTab('planner')">
       <i class="bi bi-calendar-check"></i>
       <span>Planner</span>
     </button>
-    <button class="nav-btn" data-tab="debt">
+    <button class="nav-btn" data-tab="debt" onclick="showTab('debt')">
       <i class="bi bi-cash-coin"></i>
       <span>Debt</span>
     </button>
-    <button class="nav-btn" data-tab="settings">
+    <button class="nav-btn" data-tab="settings" onclick="showTab('settings')">
       <i class="bi bi-gear"></i>
       <span>Settings</span>
     </button>
@@ -772,34 +793,35 @@
       <div class="modal-content glass-card">
         <form id="transactionForm" autocomplete="off">
           <div class="modal-header">
-            <h5 class="modal-title"><i class="bi bi-plus-circle"></i> Add Transaction</h5>
+            <h5 class="modal-title" id="addTransactionModalLabel"><i class="bi bi-plus-circle"></i> Add Transaction</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
           </div>
           <div class="modal-body">
+            <div id="formAlert" class="alert alert-danger d-none"></div>
             <input type="hidden" id="editTransactionIndex" value="-1">
-            <div class="row g-2 align-items-end">
-              <div class="col-6 col-md-4">
+            <div class="row g-3">
+              <div class="col-12 col-md-6">
                 <label for="dateInput" class="form-label">Date</label>
                 <input type="date" class="form-control form-glass" id="dateInput" required>
               </div>
-              <div class="col-12 col-md-4">
+              <div class="col-12 col-md-6">
                 <label for="descInput" class="form-label">Description</label>
                 <input type="text" class="form-control form-glass" id="descInput" required>
               </div>
-              <div class="col-6 col-md-2">
+              <div class="col-12 col-md-6">
                 <label class="form-label">Type</label>
                 <select class="form-select form-glass" id="typeInput" required>
                   <option value="income">Income</option>
                   <option value="expense">Expense</option>
                 </select>
               </div>
-              <div class="col-6 col-md-2">
+              <div class="col-12 col-md-6">
                 <label for="categoryInput" class="form-label">Category</label>
                 <select class="form-select form-glass" id="categoryInput" required></select>
               </div>
-              <div class="col-6 col-md-2">
+              <div class="col-12">
                 <label for="amountInput" class="form-label">Amount</label>
-                <input type="number" class="form-control form-glass" id="amountInput" required step="0.01">
+                <input type="number" class="form-control form-glass" id="amountInput" required step="0.01" min="0.01">
               </div>
             </div>
           </div>
@@ -934,7 +956,7 @@
       <div class="modal-content glass-card">
         <form id="futureIncomeForm" autocomplete="off">
           <div class="modal-header">
-            <h5 class="modal-title">Add Future Income</h5>
+            <h5 class="modal-title" id="futureIncomeModalLabel">Add Future Income</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
           </div>
           <div class="modal-body">
@@ -955,7 +977,7 @@
               </div>
               <div class="col-md-6">
                 <label for="futureIncomeAmount" class="form-label">Amount</label>
-                <input type="number" class="form-control form-glass" id="futureIncomeAmount" required step="0.01">
+                <input type="number" class="form-control form-glass" id="futureIncomeAmount" required step="0.01" min="0.01">
               </div>
             </div>
             <div class="row g-2 mt-2">
@@ -992,7 +1014,7 @@
       <div class="modal-content glass-card">
         <form id="futureExpenseForm" autocomplete="off">
           <div class="modal-header">
-            <h5 class="modal-title">Add Future Expense</h5>
+            <h5 class="modal-title" id="futureExpenseModalLabel">Add Future Expense</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
           </div>
           <div class="modal-body">
@@ -1014,7 +1036,7 @@
               </div>
               <div class="col-md-6">
                 <label for="futureExpenseAmount" class="form-label">Amount</label>
-                <input type="number" class="form-control form-glass" id="futureExpenseAmount" required step="0.01">
+                <input type="number" class="form-control form-glass" id="futureExpenseAmount" required step="0.01" min="0.01">
               </div>
             </div>
             <div class="row g-2 mt-2">
@@ -1051,7 +1073,7 @@
       <div class="modal-content glass-card">
         <form id="loanForm" autocomplete="off">
           <div class="modal-header">
-            <h5 class="modal-title">Add Loan</h5>
+            <h5 class="modal-title" id="loanModalLabel">Add Loan</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
           </div>
           <div class="modal-body">
@@ -1063,13 +1085,13 @@
             </div>
             <div class="mb-3">
               <label for="loanAmount" class="form-label">Amount</label>
-              <input type="number" class="form-control form-glass" id="loanAmount" required step="0.01">
+              <input type="number" class="form-control form-glass" id="loanAmount" required step="0.01" min="0.01">
             </div>
-            <div class="mb-3" id="loanBorrowerLabel">
+            <div class="mb-3" id="loanGivenFields">
               <label for="loanBorrower" class="form-label">Borrower Name</label>
               <input type="text" class="form-control form-glass" id="loanBorrower">
             </div>
-            <div class="mb-3" id="loanLenderLabel" style="display: none;">
+            <div class="mb-3 d-none" id="loanTakenFields">
               <label for="loanLender" class="form-label">Lender Name</label>
               <input type="text" class="form-control form-glass" id="loanLender">
             </div>
@@ -1078,7 +1100,7 @@
                 <label for="loanDateGiven" class="form-label">Date Given</label>
                 <input type="date" class="form-control form-glass" id="loanDateGiven">
               </div>
-              <div class="col-md-6" id="loanDateTakenLabel" style="display: none;">
+              <div class="col-md-6 d-none" id="loanDateTakenLabel">
                 <label for="loanDateTaken" class="form-label">Date Taken</label>
                 <input type="date" class="form-control form-glass" id="loanDateTaken">
               </div>
@@ -1086,7 +1108,7 @@
                 <label for="loanExpectedReturn" class="form-label">Expected Return Date</label>
                 <input type="date" class="form-control form-glass" id="loanExpectedReturn">
               </div>
-              <div class="col-md-6" id="loanDueDateLabel" style="display: none;">
+              <div class="col-md-6 d-none" id="loanDueDateLabel">
                 <label for="loanDueDate" class="form-label">Due Date</label>
                 <input type="date" class="form-control form-glass" id="loanDueDate">
               </div>
