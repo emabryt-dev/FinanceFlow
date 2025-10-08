@@ -2921,8 +2921,8 @@ updateRecentTransactions() {
         return new Intl.NumberFormat('en-PK', {
             style: 'currency',
             currency: this.settings.currency,
-            minimumFractionDigits: 0,
-            maximumFractionDigits: 0
+            minimumFractionDigits: 1,
+            maximumFractionDigits: 1
         }).format(amount);
     }
 
