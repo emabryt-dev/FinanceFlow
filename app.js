@@ -301,28 +301,28 @@ class FinanceFlow {
         return tips;
     }
 
-    detectSubscriptions() {
-        const subscriptions = [];
-        const monthlyData = this.getMonthlySummary(new Date());
-        
-        // Simple subscription detection based on recurring descriptions
-        const recurringKeywords = ['netflix', 'spotify', 'youtube', 'premium', 'subscription', 'membership'];
-        
-        this.transactions.forEach(transaction => {
-            if (transaction.type === 'expense') {
-                const desc = transaction.description.toLowerCase();
-                if (recurringKeywords.some(keyword => desc.includes(keyword))) {
-                    subscriptions.push({
-                        description: transaction.description,
-                        amount: transaction.amount,
-                        category: transaction.category
-                    });
-                }
+detectSubscriptions() {
+    const subscriptions = [];
+    const monthlyData = this.getMonthlySummary(new Date());
+    
+    // Simple subscription detection based on recurring descriptions
+    const recurringKeywords = ['netflix', 'spotify', 'youtube', 'premium', 'subscription', 'membership'];
+    
+    this.transactions.forEach(transaction => {
+        if (transaction.type === 'expense' && transaction.description) {
+            const desc = transaction.description.toLowerCase();
+            if (recurringKeywords.some(keyword => desc.includes(keyword))) {
+                subscriptions.push({
+                    description: transaction.description,
+                    amount: transaction.amount,
+                    category: transaction.category
+                });
             }
-        });
-        
-        return subscriptions;
-    }
+        }
+    });
+    
+    return subscriptions;
+}
 
     generatePredictions() {
         const predictions = [];
@@ -437,35 +437,35 @@ class FinanceFlow {
         return suggestions;
     }
 
-    findCategorizationPatterns() {
-        const patterns = [];
-        const expenseTransactions = this.transactions.filter(t => t.type === 'expense');
+findCategorizationPatterns() {
+    const patterns = [];
+    const expenseTransactions = this.transactions.filter(t => t.type === 'expense' && t.description);
+    
+    // Simple pattern detection based on description keywords
+    const categoryKeywords = {
+        'Food': ['restaurant', 'cafe', 'food', 'grocery', 'supermarket', 'meal'],
+        'Transport': ['uber', 'taxi', 'fuel', 'petrol', 'transport', 'bus', 'train'],
+        'Shopping': ['mall', 'store', 'shop', 'amazon', 'aliexpress'],
+        'Entertainment': ['movie', 'cinema', 'game', 'netflix', 'spotify']
+    };
+    
+    Object.entries(categoryKeywords).forEach(([category, keywords]) => {
+        const matches = expenseTransactions.filter(t => 
+            keywords.some(keyword => t.description.toLowerCase().includes(keyword)) &&
+            t.category !== category
+        );
         
-        // Simple pattern detection based on description keywords
-        const categoryKeywords = {
-            'Food': ['restaurant', 'cafe', 'food', 'grocery', 'supermarket', 'meal'],
-            'Transport': ['uber', 'taxi', 'fuel', 'petrol', 'transport', 'bus', 'train'],
-            'Shopping': ['mall', 'store', 'shop', 'amazon', 'aliexpress'],
-            'Entertainment': ['movie', 'cinema', 'game', 'netflix', 'spotify']
-        };
-        
-        Object.entries(categoryKeywords).forEach(([category, keywords]) => {
-            const matches = expenseTransactions.filter(t => 
-                keywords.some(keyword => t.description.toLowerCase().includes(keyword)) &&
-                t.category !== category
-            );
-            
-            if (matches.length > 0) {
-                patterns.push({
-                    category: category,
-                    matches: matches.length,
-                    sample: matches[0].description
-                });
-            }
-        });
-        
-        return patterns;
-    }
+        if (matches.length > 0) {
+            patterns.push({
+                category: category,
+                matches: matches.length,
+                sample: matches[0].description
+            });
+        }
+    });
+    
+    return patterns;
+}
 
     // Enhanced Monthly Rollover System
     calculateMonthlyRollover() {
