@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>FinanceFlow</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="app">
+
+    <!-- Dashboard -->
+    <section id="dashboard">
+      <h1>Dashboard</h1>
+      <div id="summary" class="grid"></div>
+    </section>
+
+    <!-- Transactions -->
+    <section id="transactions">
+      <h1>Transactions</h1>
+      <div id="tx-list"></div>
+    </section>
+
+    <!-- Planner -->
+    <section id="planner">
+      <h1>Planner</h1>
+      <div id="planner-body"></div>
+    </section>
+
+    <!-- Analytics -->
+    <section id="analytics">
+      <h1>Analytics</h1>
+      <canvas id="spending-chart"></canvas>
+    </section>
+
+    <!-- Settings -->
+    <section id="settings">
+      <h1>Settings</h1>
+      <button onclick="initGoogleSync()">Enable Google Drive Sync</button>
+    </section>
+
+  </div>
+
+  <!-- Floating Action Button -->
+  <button id="fab">+</button>
+
+  <!-- External libs -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+
+  <!-- App scripts -->
+  <script src="ai.js"></script>
+  <script src="drive-sync.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
