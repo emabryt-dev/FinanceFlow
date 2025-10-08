@@ -914,6 +914,240 @@ body.dark-mode {
   }
 }
 
+/* NEW STYLES FOR MISSING ELEMENTS */
+
+/* Category Breakdown Styles */
+.breakdown-container {
+  margin-bottom: 1.5rem;
+}
+
+.breakdown-card {
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.breakdown-card:hover {
+  transform: translateY(-3px);
+}
+
+.card-header-enhanced {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: white;
+}
+
+.breakdown-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.breakdown-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  transition: all 0.3s ease;
+}
+
+.breakdown-item:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateX(5px);
+}
+
+.breakdown-category {
+  font-weight: 500;
+  color: white;
+}
+
+.breakdown-amount {
+  font-weight: bold;
+  color: white;
+}
+
+.income-breakdown .breakdown-amount {
+  color: var(--success);
+}
+
+.expense-breakdown .breakdown-amount {
+  color: var(--danger);
+}
+
+/* Category Filter Buttons */
+.category-filter-buttons {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.category-type-badge {
+  font-size: 0.7rem;
+  padding: 0.2rem 0.5rem;
+  border-radius: 10px;
+  margin-left: 0.5rem;
+}
+
+.category-income {
+  background: rgba(16, 185, 129, 0.2);
+  color: var(--success);
+}
+
+.category-expense {
+  background: rgba(239, 71, 111, 0.2);
+  color: var(--danger);
+}
+
+/* Risk Alerts */
+.risk-alerts-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.risk-alert {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 1rem;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.1);
+  border-left: 4px solid;
+}
+
+.risk-alert.warning {
+  border-left-color: var(--warning);
+}
+
+.risk-alert-icon {
+  font-size: 1.2rem;
+}
+
+.risk-alert-content {
+  flex: 1;
+}
+
+.risk-alert-message {
+  font-size: 0.9rem;
+  color: white;
+}
+
+/* Category Transactions Modal */
+.category-transactions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.category-transaction-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+}
+
+.category-transaction-info {
+  flex: 1;
+}
+
+.category-transaction-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Month Details Styles */
+.month-details-summary {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 15px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.month-details-breakdown {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.month-details-income-item, .month-details-expense-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+}
+
+/* Chart Placeholder */
+.chart-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: rgba(255, 255, 255, 0.5);
+  text-align: center;
+  padding: 2rem;
+}
+
+/* Confirmation Modal */
+.confirmation-modal .modal-content {
+  text-align: center;
+}
+
+.confirmation-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.confirmation-danger {
+  color: var(--danger);
+}
+
+.confirmation-success {
+  color: var(--success);
+}
+
+/* Clickable Elements */
+.clickable {
+  cursor: pointer;
+}
+
+.clickable-row:hover {
+  background: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Description cell with tooltip */
+.description-cell {
+  position: relative;
+  cursor: help;
+}
+
+.description-cell:hover::after {
+  content: attr(data-fulltext);
+  position: absolute;
+  bottom: 100%;
+  left: 0;
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 0.5rem;
+  border-radius: 5px;
+  white-space: nowrap;
+  z-index: 1000;
+  font-size: 0.8rem;
+}
+
 /* Mobile Optimizations */
 @media (max-width: 768px) {
   .glass-card {
@@ -946,6 +1180,14 @@ body.dark-mode {
   
   .stat-value {
     font-size: 1.2rem;
+  }
+  
+  .breakdown-container .row {
+    flex-direction: column;
+  }
+  
+  .category-filter-buttons {
+    flex-wrap: wrap;
   }
 }
 
