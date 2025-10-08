@@ -305,7 +305,14 @@ function wireEvents() {
 function initLottie(){
   const el = $id('lottie-empty');
   if (!el) return;
-  lottie.loadAnimation({ container: el, renderer:'svg', loop:true, autoplay:true, path: 'https://assets7.lottiefiles.com/packages/lf20_jgikwtux.json' });
+  lottie.loadAnimation({ 
+  container: el, 
+  renderer:'svg', 
+  loop:true, 
+  autoplay:true, 
+  path: 'https://lottie.host/30e69f4f-8a38-456d-85db-0dcb30f8243e/0jx2ZTkPjv.json' 
+});
+
 }
 
 /* -------------------------
