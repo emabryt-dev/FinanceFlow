@@ -156,5 +156,14 @@
   <script src="ai.js"></script>
   <script src="drive-sync.js"></script>
   <script src="app.js"></script>
+  <script>
+  if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("sw.js")
+      .then(() => console.log("✅ Service Worker registered"))
+      .catch(err => console.error("SW registration failed:", err));
+    }
+  </script>
+
+  
 </body>
 </html>
