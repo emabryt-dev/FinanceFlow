@@ -39,7 +39,7 @@ body.dark-mode {
   border-radius: 20px;
   box-shadow: var(--shadow);
   padding: 1.5rem;
-  margin-bottom: 1rem;
+  margin-bottom: 0.5rem;
   transition: all 0.3s ease;
 }
 
@@ -64,7 +64,7 @@ body.dark-mode {
 /* Enhanced Bottom Navigation */
 .bottom-nav {
   position: fixed;
-  bottom: 0;
+  bottom: 1.75%;
   left: 50%;
   transform: translateX(-50%);
   background: rgba(255, 255, 255, 0.1);
@@ -73,7 +73,6 @@ body.dark-mode {
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 25px;
   padding: 0.5rem;
-  margin: 1rem;
   display: flex;
   gap: 0.5rem;
   box-shadow: var(--shadow);
