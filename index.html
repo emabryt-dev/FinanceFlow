@@ -4,8 +4,6 @@
   <meta charset="UTF-8">
   <title>Finance Flow</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  
-  <!-- PWA Meta Tags -->
   <meta name="theme-color" content="#4361EE">
   <link rel="manifest" href="manifest.json">
   
@@ -18,7 +16,7 @@
   <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
-  <!-- Enhanced Navigation -->
+  <!-- Enhanced Glass Navigation -->
   <nav class="navbar navbar-glass">
     <div class="container-fluid">
       <a class="navbar-brand" href="#">
@@ -26,12 +24,9 @@
         Finance Flow
       </a>
       <div class="d-flex align-items-center">
-        <!-- Sync Status -->
         <div class="sync-status me-3">
           <i id="syncStatusIcon" class="bi bi-cloud"></i>
         </div>
-        
-        <!-- Profile -->
         <div class="dropdown">
           <button class="btn p-0 border-0" type="button" id="profileDropdown" data-bs-toggle="dropdown">
             <div class="profile-pic">
@@ -54,6 +49,12 @@
                 <i class="bi bi-box-arrow-right me-2"></i>Sign out
               </a>
             </li>
+            <li><hr class="dropdown-divider"></li>
+            <li>
+              <a class="dropdown-item" href="#" onclick="manualSync()">
+                <i class="bi bi-cloud-arrow-up me-2"></i>Sync Now
+              </a>
+            </li>
           </ul>
         </div>
       </div>
@@ -63,7 +64,7 @@
   <!-- Toast Container -->
   <div class="toast-container" id="toastContainer"></div>
 
-  <!-- Enhanced FAB -->
+  <!-- Enhanced FAB with Quick Actions -->
   <div class="fab-container">
     <button class="fab-primary" id="mainFab">
       <i class="bi bi-plus"></i>
@@ -71,12 +72,15 @@
     <div class="fab-menu">
       <button class="fab-item income" onclick="quickAddTransaction('income')">
         <i class="bi bi-arrow-down-circle"></i>
+        <span>Income</span>
       </button>
       <button class="fab-item expense" onclick="quickAddTransaction('expense')">
         <i class="bi bi-arrow-up-circle"></i>
+        <span>Expense</span>
       </button>
       <button class="fab-item transfer" onclick="quickAddTransfer()">
         <i class="bi bi-arrow-left-right"></i>
+        <span>Transfer</span>
       </button>
     </div>
   </div>
@@ -86,7 +90,23 @@
     
     <!-- Dashboard Tab -->
     <div id="tab-dashboard" class="tab-page">
-      <!-- Financial Health Score -->
+      <!-- Rollover Balance -->
+      <div id="rolloverBalance" class="glass-card rollover-balance d-none">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <small class="text-muted">Starting Balance</small>
+            <div class="rollover-amount" id="rolloverAmount">0</div>
+            <small id="rolloverDescription" class="text-muted"></small>
+          </div>
+          <div>
+            <button class="btn btn-sm btn-outline-secondary" onclick="toggleRolloverSettings()">
+              <i class="bi bi-gear"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Financial Health & Quick Stats -->
       <div class="glass-card health-score-card">
         <div class="health-score-header">
           <h6>Financial Health</h6>
@@ -155,25 +175,508 @@
       </div>
     </div>
 
-    <!-- Other tabs will be implemented similarly -->
+    <!-- Transactions Tab -->
     <div id="tab-transactions" class="tab-page d-none">
-      <!-- Transactions content -->
+      <div class="glass-card">
+        <div class="card-header">
+          <h6><i class="bi bi-list-ul"></i> Transactions</h6>
+          <div class="input-group" style="max-width: 300px;">
+            <input type="text" id="transactionSearch" class="form-control form-glass" placeholder="Search transactions...">
+          </div>
+        </div>
+        <div class="table-responsive">
+          <table class="table table-hover" id="transactionsTable">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Description</th>
+                <th>Type</th>
+                <th>Category</th>
+                <th>Amount</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="transactionsBody">
+              <!-- Transactions will populate here -->
+            </tbody>
+          </table>
+        </div>
+        <div id="noTransactions" class="text-center p-3 d-none">
+          No transactions found.
+        </div>
+      </div>
     </div>
-    
+
+    <!-- Analytics Tab -->
     <div id="tab-analytics" class="tab-page d-none">
-      <!-- Analytics content -->
+      <div class="analytics-container">
+        <!-- AI Insights Header -->
+        <div class="ai-insights-header">
+          <div class="row g-3">
+            <div class="col-12 col-md-4">
+              <div class="glass-card health-score-card">
+                <div class="health-score-header">
+                  <i class="bi bi-heart-pulse"></i> Financial Health
+                </div>
+                <div class="health-score-value" id="analyticsHealthScore">--</div>
+                <div class="health-score-label" id="healthScoreLabel">Calculating...</div>
+              </div>
+            </div>
+            <div class="col-12 col-md-4">
+              <div class="glass-card savings-rate-card">
+                <div class="savings-rate-header">
+                  <i class="bi bi-piggy-bank"></i> Savings Rate
+                </div>
+                <div class="savings-rate-value" id="savingsRateValue">--</div>
+                <div class="savings-rate-label">This Month</div>
+                <div class="savings-rate-progress">
+                  <div class="progress">
+                    <div id="savingsRateProgress" class="progress-bar"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-12 col-md-4">
+              <div class="glass-card ai-recommendations-card">
+                <div class="ai-recommendations-header">
+                  <i class="bi bi-robot"></i> AI Insights
+                </div>
+                <div id="analyticsQuickInsights" class="ai-quick-insights">
+                  <div class="text-center text-muted">
+                    <small>Analyzing your spending patterns...</small>
+                  </div>
+                </div>
+                <button class="btn btn-sm btn-outline-primary w-100 mt-2" onclick="showFullAIAnalysis()">
+                  <i class="bi bi-graph-up"></i> View Full Analysis
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Analytics Navigation -->
+        <div class="analytics-nav">
+          <div class="nav nav-pills nav-fill" id="analyticsTabs" role="tablist">
+            <button class="nav-link active" id="overview-tab" data-bs-toggle="pill" data-bs-target="#overview" type="button">
+              <i class="bi bi-speedometer2"></i> Overview
+            </button>
+            <button class="nav-link" id="trends-tab" data-bs-toggle="pill" data-bs-target="#trends" type="button">
+              <i class="bi bi-bar-chart"></i> Trends
+            </button>
+            <button class="nav-link" id="comparison-tab" data-bs-toggle="pill" data-bs-target="#comparison" type="button">
+              <i class="bi bi-calendar-range"></i> Comparison
+            </button>
+          </div>
+        </div>
+
+        <!-- Analytics Content -->
+        <div class="tab-content" id="analyticsTabContent">
+          <!-- Overview Tab -->
+          <div class="tab-pane fade show active" id="overview" role="tabpanel">
+            <div class="row g-3">
+              <div class="col-12 col-lg-8">
+                <div class="glass-card chart-card">
+                  <div class="chart-header">
+                    <i class="bi bi-graph-up"></i> Spending Overview
+                    <div class="chart-controls">
+                      <select id="overviewChartType" class="form-select form-select-sm form-glass">
+                        <option value="category">By Category</option>
+                        <option value="monthly">Monthly Trend</option>
+                        <option value="yearly">Yearly Comparison</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div class="chart-body">
+                    <canvas id="overviewChart" height="300"></canvas>
+                  </div>
+                </div>
+              </div>
+              <div class="col-12 col-lg-4">
+                <div class="glass-card distribution-card">
+                  <div class="card-header">
+                    <i class="bi bi-pie-chart"></i> Income Distribution
+                  </div>
+                  <div class="chart-body">
+                    <canvas id="incomePieChart" height="250"></canvas>
+                  </div>
+                </div>
+                <div class="glass-card distribution-card mt-3">
+                  <div class="card-header">
+                    <i class="bi bi-pie-chart"></i> Expense Distribution
+                  </div>
+                  <div class="chart-body">
+                    <canvas id="expensePieChart" height="250"></canvas>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Trends Tab -->
+          <div class="tab-pane fade" id="trends" role="tabpanel">
+            <div class="row g-3">
+              <div class="col-12">
+                <div class="glass-card chart-card">
+                  <div class="chart-header">
+                    <i class="bi bi-heart-pulse"></i> Financial Health Trend
+                  </div>
+                  <div class="chart-body">
+                    <canvas id="healthTrendChart" height="200"></canvas>
+                  </div>
+                </div>
+              </div>
+              <div class="col-12 col-lg-6">
+                <div class="glass-card chart-card">
+                  <div class="chart-header">
+                    <i class="bi bi-calendar-week"></i> Spending Heat Map
+                  </div>
+                  <div class="chart-body">
+                    <div id="heatMapContainer" class="heat-map-container"></div>
+                  </div>
+                </div>
+              </div>
+              <div class="col-12 col-lg-6">
+                <div class="glass-card chart-card">
+                  <div class="chart-header">
+                    <i class="bi bi-arrow-up-right"></i> Category Trends
+                  </div>
+                  <div class="chart-body">
+                    <canvas id="categoryTrendChart" height="300"></canvas>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Comparison Tab -->
+          <div class="tab-pane fade" id="comparison" role="tabpanel">
+            <div class="row g-3">
+              <div class="col-12">
+                <div class="comparison-controls">
+                  <div class="row g-2">
+                    <div class="col-md-4">
+                      <select id="comparisonType" class="form-select form-glass">
+                        <option value="month">Month vs Month</option>
+                        <option value="year">Year vs Year</option>
+                        <option value="average">vs 3-Month Average</option>
+                      </select>
+                    </div>
+                    <div class="col-md-4">
+                      <select id="comparisonPeriod1" class="form-select form-glass"></select>
+                    </div>
+                    <div class="col-md-4">
+                      <select id="comparisonPeriod2" class="form-select form-glass"></select>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="col-12 col-lg-6">
+                <div class="glass-card chart-card">
+                  <div class="chart-header">
+                    <i class="bi bi-bar-chart"></i> Spending Comparison
+                  </div>
+                  <div class="chart-body">
+                    <canvas id="comparisonChart" height="300"></canvas>
+                  </div>
+                </div>
+              </div>
+              <div class="col-12 col-lg-6">
+                <div class="glass-card chart-card">
+                  <div class="chart-header">
+                    <i class="bi bi-percent"></i> Change Analysis
+                  </div>
+                  <div class="chart-body">
+                    <div id="changeAnalysis" class="change-analysis-container"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
-    
+
+    <!-- Planner Tab -->
     <div id="tab-planner" class="tab-page d-none">
-      <!-- Planner content -->
+      <div class="glass-card">
+        <div class="card-header">
+          <i class="bi bi-calendar-check"></i> Financial Planner
+        </div>
+        <div class="card-body">
+          <!-- Timeframe Selector -->
+          <div class="row mb-4">
+            <div class="col-12">
+              <div class="btn-group w-100" role="group">
+                <button type="button" class="btn btn-outline-primary planner-timeframe-btn active" data-timeframe="1year">
+                  1 Year
+                </button>
+                <button type="button" class="btn btn-outline-primary planner-timeframe-btn" data-timeframe="2years">
+                  2 Years
+                </button>
+                <button type="button" class="btn btn-outline-primary planner-timeframe-btn" data-timeframe="3years">
+                  3 Years
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Projection Summary -->
+          <div class="row g-3 mb-4">
+            <div class="col-6 col-md-3">
+              <div class="glass-card text-center">
+                <div class="card-body">
+                  <div class="text-success">
+                    <i class="bi bi-bank fs-4"></i>
+                    <div class="fw-bold fs-5" id="plannerNetWealth">0</div>
+                    <small>Projected Net</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-6 col-md-3">
+              <div class="glass-card text-center">
+                <div class="card-body">
+                  <div class="text-success">
+                    <i class="bi bi-emoji-smile fs-4"></i>
+                    <div class="fw-bold fs-5" id="plannerTotalIncome">0</div>
+                    <small>Total Income</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-6 col-md-3">
+              <div class="glass-card text-center">
+                <div class="card-body">
+                  <div class="text-danger">
+                    <i class="bi bi-emoji-frown fs-4"></i>
+                    <div class="fw-bold fs-5" id="plannerTotalExpenses">0</div>
+                    <small>Total Expenses</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-6 col-md-3">
+              <div class="glass-card text-center">
+                <div class="card-body">
+                  <div class="text-primary">
+                    <i class="bi bi-cash-coin fs-4"></i>
+                    <div class="fw-bold fs-5" id="plannerEndingBalance">0</div>
+                    <small>Ending Balance</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="row mb-4">
+            <div class="col-6">
+              <button class="btn btn-success w-100" onclick="openAddFutureIncome()">
+                <i class="bi bi-plus-circle"></i> Add Future Income
+              </button>
+            </div>
+            <div class="col-6">
+              <button class="btn btn-danger w-100" onclick="openAddFutureExpense()">
+                <i class="bi bi-plus-circle"></i> Add Future Expense
+              </button>
+            </div>
+          </div>
+
+          <!-- Monthly Projection Timeline -->
+          <div class="mb-4">
+            <h6><i class="bi bi-graph-up"></i> Monthly Projections</h6>
+            <div id="plannerTimeline" class="planner-timeline"></div>
+          </div>
+
+          <!-- Future Income List -->
+          <div class="mb-4">
+            <h6><i class="bi bi-currency-dollar text-success"></i> Future Income</h6>
+            <div id="futureIncomeList" class="planner-list"></div>
+          </div>
+
+          <!-- Future Expenses List -->
+          <div class="mb-4">
+            <h6><i class="bi bi-cart text-danger"></i> Future Expenses</h6>
+            <div id="futureExpensesList" class="planner-list"></div>
+          </div>
+        </div>
+      </div>
     </div>
-    
+
+    <!-- Debt Management Tab -->
     <div id="tab-debt" class="tab-page d-none">
-      <!-- Debt content -->
+      <div class="glass-card">
+        <div class="card-header">
+          <i class="bi bi-cash-coin"></i> Debt Management
+        </div>
+        <div class="card-body">
+          <!-- Debt Summary -->
+          <div class="row g-3 mb-4">
+            <div class="col-6 col-md-3">
+              <div class="glass-card text-center">
+                <div class="card-body">
+                  <div class="text-success">
+                    <i class="bi bi-arrow-up-right fs-4"></i>
+                    <div class="fw-bold fs-5" id="totalLoansGiven">0</div>
+                    <small>Loans Given</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-6 col-md-3">
+              <div class="glass-card text-center">
+                <div class="card-body">
+                  <div class="text-danger">
+                    <i class="bi bi-arrow-down-left fs-4"></i>
+                    <div class="fw-bold fs-5" id="totalLoansTaken">0</div>
+                    <small>Loans Taken</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-6 col-md-3">
+              <div class="glass-card text-center">
+                <div class="card-body">
+                  <div class="text-primary">
+                    <i class="bi bi-wallet fs-4"></i>
+                    <div>
+                      <span class="fw-bold fs-5" id="netDebtPosition">0 PKR</span>
+                    </div>
+                    <small>Net Position</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-6 col-md-3">
+              <div class="glass-card text-center">
+                <div class="card-body">
+                  <div class="text-warning">
+                    <i class="bi bi-clock fs-4"></i>
+                    <div class="fw-bold fs-5" id="upcomingCount">0</div>
+                    <small>Upcoming</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="row mb-4">
+            <div class="col-6">
+              <button class="btn btn-success w-100" onclick="openAddLoan('given')">
+                <i class="bi bi-arrow-up-right"></i> Add Loan Given
+              </button>
+            </div>
+            <div class="col-6">
+              <button class="btn btn-danger w-100" onclick="openAddLoan('taken')">
+                <i class="bi bi-arrow-down-left"></i> Add Loan Taken
+              </button>
+            </div>
+          </div>
+
+          <!-- Upcoming Repayments -->
+          <div class="mb-4">
+            <h6><i class="bi bi-clock text-warning"></i> Upcoming Repayments</h6>
+            <div id="upcomingRepayments" class="debt-list"></div>
+          </div>
+
+          <!-- Loans Given -->
+          <div class="mb-4">
+            <h6><i class="bi bi-arrow-up-right text-success"></i> Loans Given</h6>
+            <div id="loansGivenList" class="debt-list"></div>
+          </div>
+
+          <!-- Loans Taken -->
+          <div class="mb-4">
+            <h6><i class="bi bi-arrow-down-left text-danger"></i> Loans Taken</h6>
+            <div id="loansTakenList" class="debt-list"></div>
+          </div>
+        </div>
+      </div>
     </div>
-    
+
+    <!-- Settings Tab -->
     <div id="tab-settings" class="tab-page d-none">
-      <!-- Settings content -->
+      <div class="glass-card">
+        <div class="card-header"><i class="bi bi-gear"></i> Settings</div>
+        <div class="card-body">
+          <!-- Dark Mode Toggle -->
+          <div class="mb-3">
+            <div class="form-check form-switch">
+              <input class="form-check-input" type="checkbox" id="darkModeToggle">
+              <label class="form-check-label" for="darkModeToggle">Dark Mode</label>
+            </div>
+          </div>
+          <hr>
+
+          <!-- Cloud Sync Section -->
+          <div class="mb-3">
+            <label class="form-label">Cloud Sync</label>
+            <div class="d-flex gap-2 mb-2">
+              <button id="manualSyncSettings" class="btn btn-outline-primary btn-sm">
+                <i class="bi bi-cloud-arrow-up"></i> Sync Now
+              </button>
+              <small class="text-muted ms-2" id="syncStatusText">
+                Sign in to sync across devices
+              </small>
+            </div>
+          </div>
+          <hr>
+
+          <!-- Monthly Rollover Settings -->
+          <div class="mb-3">
+            <label class="form-label">Monthly Rollover Settings</label>
+            <div class="form-check form-switch mb-2">
+              <input class="form-check-input" type="checkbox" id="autoRolloverToggle" checked>
+              <label class="form-check-label" for="autoRolloverToggle">Auto-rollover balances</label>
+            </div>
+            <div class="form-check form-switch mb-2">
+              <input class="form-check-input" type="checkbox" id="allowNegativeRollover">
+              <label class="form-check-label" for="allowNegativeRollover">Allow negative rollovers</label>
+            </div>
+          </div>
+          <hr>
+
+          <!-- Currency Selection -->
+          <div class="mb-3">
+            <label for="currencySelect" class="form-label">Currency</label>
+            <select id="currencySelect" class="form-select form-glass">
+              <option value="PKR">PKR - Pakistani Rupee</option>
+              <option value="USD">USD - US Dollar</option>
+              <option value="EUR">EUR - Euro</option>
+            </select>
+          </div>
+
+          <!-- Category Management -->
+          <div>
+            <button id="toggleCategorySettings" class="btn btn-outline-secondary w-100 mb-2" type="button">
+              <span id="catCollapseIcon"><i class="bi bi-chevron-right"></i></span> Category Settings
+            </button>
+            <div id="categorySettingsPanel" class="collapse">
+              <div class="input-group mb-2">
+                <input type="text" id="newCategoryInput" class="form-control form-glass" placeholder="New category">
+                <select id="newCategoryType" class="form-select form-glass" style="max-width: 120px;">
+                  <option value="income">Income</option>
+                  <option value="expense">Expense</option>
+                </select>
+                <button id="addCategoryBtn" class="btn btn-primary" type="button"><i class="bi bi-plus"></i> Add</button>
+              </div>
+              <ul id="categoryList" class="list-group"></ul>
+            </div>
+          </div>
+          <hr>
+
+          <!-- Import / Export -->
+          <div>
+            <label class="form-label">Import / Export Transactions</label>
+            <div class="mb-2">
+              <button id="exportBtn" class="btn btn-outline-success btn-sm"><i class="bi bi-download"></i> Export</button>
+              <input type="file" id="importFile" accept=".json" style="display:none;">
+              <button id="importBtn" class="btn btn-outline-primary btn-sm"><i class="bi bi-upload"></i> Import</button>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -195,11 +698,197 @@
       <i class="bi bi-calendar-check"></i>
       <span>Planner</span>
     </button>
+    <button class="nav-btn" data-tab="debt">
+      <i class="bi bi-cash-coin"></i>
+      <span>Debt</span>
+    </button>
     <button class="nav-btn" data-tab="settings">
       <i class="bi bi-gear"></i>
       <span>Settings</span>
     </button>
   </nav>
+
+  <!-- Modals -->
+  <!-- Add Transaction Modal -->
+  <div class="modal fade" id="addTransactionModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content glass-card">
+        <form id="transactionForm" autocomplete="off">
+          <div class="modal-header">
+            <h5 class="modal-title"><i class="bi bi-plus-circle"></i> Add Transaction</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+            <input type="hidden" id="editTransactionIndex" value="-1">
+            <div class="row g-2 align-items-end">
+              <div class="col-6 col-md-4">
+                <label for="dateInput" class="form-label">Date</label>
+                <input type="date" class="form-control form-glass" id="dateInput" required>
+              </div>
+              <div class="col-12 col-md-4">
+                <label for="descInput" class="form-label">Description</label>
+                <input type="text" class="form-control form-glass" id="descInput" required>
+              </div>
+              <div class="col-6 col-md-2">
+                <label class="form-label">Type</label>
+                <select class="form-select form-glass" id="typeInput" required>
+                  <option value="income">Income</option>
+                  <option value="expense">Expense</option>
+                </select>
+              </div>
+              <div class="col-6 col-md-2">
+                <label for="categoryInput" class="form-label">Category</label>
+                <select class="form-select form-glass" id="categoryInput" required></select>
+              </div>
+              <div class="col-6 col-md-2">
+                <label for="amountInput" class="form-label">Amount</label>
+                <input type="number" class="form-control form-glass" id="amountInput" required step="0.01">
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="submit" class="btn btn-success"><i class="bi bi-check-circle"></i> <span id="submitButtonText">Add</span></button>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- AI Insights Modal -->
+  <div class="modal fade" id="aiInsightsModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content glass-card">
+        <div class="modal-header">
+          <h5 class="modal-title"><i class="bi bi-robot"></i> AI Insights & Recommendations</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div id="aiInsightsContent"></div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-primary" onclick="applyAISuggestions()">
+            <i class="bi bi-check-circle"></i> Apply Suggestions
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Future Income/Expense Modals -->
+  <div class="modal fade" id="futureIncomeModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content glass-card">
+        <form id="futureIncomeForm" autocomplete="off">
+          <div class="modal-header">
+            <h5 class="modal-title">Add Future Income</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+            <input type="hidden" id="futureIncomeIndex" value="-1">
+            <div class="mb-3">
+              <label for="futureIncomeDescription" class="form-label">Description</label>
+              <input type="text" class="form-control form-glass" id="futureIncomeDescription" required>
+            </div>
+            <div class="row g-2">
+              <div class="col-md-6">
+                <label for="futureIncomeType" class="form-label">Type</label>
+                <select class="form-select form-glass" id="futureIncomeType" required>
+                  <option value="paycheck">Paycheck</option>
+                  <option value="loan">Loan</option>
+                  <option value="sale">Asset Sale</option>
+                  <option value="committee">Committee Payout</option>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label for="futureIncomeAmount" class="form-label">Amount</label>
+                <input type="number" class="form-control form-glass" id="futureIncomeAmount" required step="0.01">
+              </div>
+            </div>
+            <div class="row g-2 mt-2">
+              <div class="col-md-6">
+                <label for="futureIncomeFrequency" class="form-label">Frequency</label>
+                <select class="form-select form-glass" id="futureIncomeFrequency" required>
+                  <option value="one-time">One-time</option>
+                  <option value="monthly">Monthly</option>
+                  <option value="quarterly">Quarterly</option>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label for="futureIncomeStartDate" class="form-label">Start Date</label>
+                <input type="date" class="form-control form-glass" id="futureIncomeStartDate" required>
+              </div>
+            </div>
+            <div class="mb-3">
+              <label for="futureIncomeEndDate" class="form-label">End Date (optional)</label>
+              <input type="date" class="form-control form-glass" id="futureIncomeEndDate">
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="submit" class="btn btn-success">Save</button>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loan Modal -->
+  <div class="modal fade" id="loanModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content glass-card">
+        <form id="loanForm" autocomplete="off">
+          <div class="modal-header">
+            <h5 class="modal-title">Add Loan</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+            <input type="hidden" id="loanIndex" value="-1">
+            <input type="hidden" id="loanType" value="given">
+            <div class="mb-3">
+              <label for="loanDescription" class="form-label">Description (optional)</label>
+              <input type="text" class="form-control form-glass" id="loanDescription" placeholder="e.g., Car loan, Personal loan">
+            </div>
+            <div class="mb-3">
+              <label for="loanAmount" class="form-label">Amount</label>
+              <input type="number" class="form-control form-glass" id="loanAmount" required step="0.01">
+            </div>
+            <div class="mb-3" id="loanBorrowerLabel">
+              <label for="loanBorrower" class="form-label">Borrower Name</label>
+              <input type="text" class="form-control form-glass" id="loanBorrower">
+            </div>
+            <div class="mb-3" id="loanLenderLabel" style="display: none;">
+              <label for="loanLender" class="form-label">Lender Name</label>
+              <input type="text" class="form-control form-glass" id="loanLender">
+            </div>
+            <div class="row g-2">
+              <div class="col-md-6" id="loanDateGivenLabel">
+                <label for="loanDateGiven" class="form-label">Date Given</label>
+                <input type="date" class="form-control form-glass" id="loanDateGiven">
+              </div>
+              <div class="col-md-6" id="loanDateTakenLabel" style="display: none;">
+                <label for="loanDateTaken" class="form-label">Date Taken</label>
+                <input type="date" class="form-control form-glass" id="loanDateTaken">
+              </div>
+              <div class="col-md-6" id="loanExpectedReturnLabel">
+                <label for="loanExpectedReturn" class="form-label">Expected Return Date</label>
+                <input type="date" class="form-control form-glass" id="loanExpectedReturn">
+              </div>
+              <div class="col-md-6" id="loanDueDateLabel" style="display: none;">
+                <label for="loanDueDate" class="form-label">Due Date</label>
+                <input type="date" class="form-control form-glass" id="loanDueDate">
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="submit" class="btn btn-success">Save</button>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
 
   <!-- Scripts -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"></script>
