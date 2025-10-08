@@ -603,7 +603,7 @@ class FinanceFlow {
 // Google Drive Sync Implementation
 class GoogleDriveSync {
     constructor() {
-        this.clientId = 'your-google-client-id';
+        this.clientId = '86191691449-lop8lu293h8956071sr0jllc2qsdpc2e.apps.googleusercontent.com';
         this.fileName = 'finance_flow_data.json';
     }
 
