@@ -2875,11 +2875,13 @@ class FinanceFlow {
         }
     }
 
-    // Utility Methods
+    // Utility Methods - UPDATED to remove decimal points
     formatCurrency(amount) {
         return new Intl.NumberFormat('en-PK', {
             style: 'currency',
-            currency: this.settings.currency
+            currency: this.settings.currency,
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 0
         }).format(amount);
     }
 
@@ -2955,7 +2957,7 @@ class FinanceFlow {
         return monthlyData.balance;
     }
 
-    // Event Handlers and Setup
+    // Event Handlers and Setup - UPDATED FAB functions
     setupEventListeners() {
         // Bottom navigation
         document.querySelectorAll('.nav-btn').forEach(btn => {
@@ -3237,20 +3239,33 @@ class FinanceFlow {
         }
     }
 
+    // UPDATED: FAB now opens modal instead of using prompts
     quickAddTransaction(type) {
-        const amount = prompt(`Enter ${type} amount:`);
-        if (amount && !isNaN(amount)) {
-            const description = prompt('Enter description:') || 'Quick Entry';
-            const category = this.categories.find(cat => cat.type === type)?.name || 'Other';
-            
-            this.addTransaction({
-                date: new Date().toISOString().split('T')[0],
-                description,
-                type,
-                category,
-                amount: parseFloat(amount)
-            });
+        document.getElementById('addTransactionModalLabel').innerHTML = '<i class="bi bi-plus-circle"></i> Add Transaction';
+        document.getElementById('submitButtonText').textContent = 'Add';
+        document.getElementById('editTransactionIndex').value = '-1';
+        document.getElementById('transactionForm').reset();
+        
+        // Pre-fill type and current date
+        document.getElementById('typeInput').value = type;
+        this.updateCategorySelect();
+        
+        // Set default category based on type
+        const defaultCategory = this.categories.find(cat => cat.type === type);
+        if (defaultCategory) {
+            document.getElementById('categoryInput').value = defaultCategory.name;
         }
+        
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('dateInput').value = today;
+        
+        // Focus on amount field for quick entry
+        setTimeout(() => {
+            document.getElementById('amountInput').focus();
+        }, 300);
+        
+        const addTxModal = new bootstrap.Modal(document.getElementById('addTransactionModal'));
+        addTxModal.show();
     }
 
     quickAddTransfer() {
