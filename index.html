@@ -17,7 +17,7 @@
 </head>
 <body>
   <!-- Enhanced Glass Navigation -->
-  <nav class="navbar navbar-glass">
+  <nav class="navbar navbar-glass navbar-expand-lg">
     <div class="container-fluid">
       <a class="navbar-brand" href="#">
         <i class="bi bi-graph-up-arrow"></i>
@@ -106,8 +106,22 @@
         </div>
       </div>
 
-      <!-- Quick Stats -->
-      <div class="row g-3 mb-4">
+      <!-- Month/Year Filter - Moved to Top -->
+      <div class="row g-2 mb-3">
+        <div class="col-md-6">
+          <select id="summaryMonth" class="form-select form-glass">
+            <option value="all">All Months</option>
+          </select>
+        </div>
+        <div class="col-md-6">
+          <select id="summaryYear" class="form-select form-glass">
+            <option value="all">All Years</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Quick Stats - Reduced spacing -->
+      <div class="row g-1 mb-4">
         <div class="col-4">
           <div class="glass-card stat-card">
             <div class="stat-icon income">
@@ -134,20 +148,6 @@
             <div class="stat-value" id="quickBalance">0</div>
             <div class="stat-label">Balance</div>
           </div>
-        </div>
-      </div>
-
-      <!-- Month/Year Filter -->
-      <div class="row g-3 mb-3">
-        <div class="col-md-6">
-          <select id="summaryMonth" class="form-select form-glass">
-            <option value="all">All Months</option>
-          </select>
-        </div>
-        <div class="col-md-6">
-          <select id="summaryYear" class="form-select form-glass">
-            <option value="all">All Years</option>
-          </select>
         </div>
       </div>
       
@@ -183,16 +183,7 @@
         </div>
       </div>
 
-      <!-- Recent Transactions -->
-      <div class="glass-card">
-        <div class="card-header">
-          <h6>Recent Transactions</h6>
-          <button class="btn btn-sm btn-link" onclick="showTab('transactions')">View All</button>
-        </div>
-        <div id="recentTransactions" class="recent-transactions">
-          <!-- Recent transactions will populate here -->
-        </div>
-      </div>
+      <!-- Recent Transactions Section Removed -->
     </div>
 
     <!-- Transactions Tab -->
@@ -490,47 +481,47 @@
             </div>
           </div>
 
-          <!-- Projection Summary -->
-          <div class="row g-3 mb-4">
+          <!-- Projection Summary - Compact Cards -->
+          <div class="row g-2 mb-4"> <!-- Reduced gap from g-3 to g-2 -->
             <div class="col-6 col-md-3">
-              <div class="glass-card text-center">
+              <div class="glass-card text-center planner-summary-card">
                 <div class="card-body">
                   <div class="text-success">
                     <i class="bi bi-bank fs-4"></i>
-                    <div class="fw-bold fs-5" id="plannerNetWealth">0</div>
+                    <div class="fw-bold fs-6" id="plannerNetWealth">0</div> <!-- Changed to fs-6 -->
                     <small>Projected Net</small>
                   </div>
                 </div>
               </div>
             </div>
             <div class="col-6 col-md-3">
-              <div class="glass-card text-center">
+              <div class="glass-card text-center planner-summary-card">
                 <div class="card-body">
                   <div class="text-success">
                     <i class="bi bi-emoji-smile fs-4"></i>
-                    <div class="fw-bold fs-5" id="plannerTotalIncome">0</div>
+                    <div class="fw-bold fs-6" id="plannerTotalIncome">0</div> <!-- Changed to fs-6 -->
                     <small>Total Income</small>
                   </div>
                 </div>
               </div>
             </div>
             <div class="col-6 col-md-3">
-              <div class="glass-card text-center">
+              <div class="glass-card text-center planner-summary-card">
                 <div class="card-body">
                   <div class="text-danger">
                     <i class="bi bi-emoji-frown fs-4"></i>
-                    <div class="fw-bold fs-5" id="plannerTotalExpenses">0</div>
+                    <div class="fw-bold fs-6" id="plannerTotalExpenses">0</div> <!-- Changed to fs-6 -->
                     <small>Total Expenses</small>
                   </div>
                 </div>
               </div>
             </div>
             <div class="col-6 col-md-3">
-              <div class="glass-card text-center">
+              <div class="glass-card text-center planner-summary-card">
                 <div class="card-body">
                   <div class="text-primary">
                     <i class="bi bi-cash-coin fs-4"></i>
-                    <div class="fw-bold fs-5" id="plannerEndingBalance">0</div>
+                    <div class="fw-bold fs-6" id="plannerEndingBalance">0</div> <!-- Changed to fs-6 -->
                     <small>Ending Balance</small>
                   </div>
                 </div>
