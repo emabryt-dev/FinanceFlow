@@ -1,54 +1,158 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>FinanceFlow</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="style.css">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>FinanceFlowPro</title>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="stylesheet" href="style.css" />
+  <meta name="theme-color" content="#4361EE">
+  <!-- CDN libs -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/bodymovin/5.9.6/lottie.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
-  <div id="app">
+  <div id="app" class="app-container">
+    <header class="topbar">
+      <div class="brand">
+        <div class="logo">FF</div>
+        <div>
+          <div class="title">FinanceFlowPro</div>
+          <div class="subtitle">Smart budgeting & insights</div>
+        </div>
+      </div>
+      <button id="syncBtn" class="icon-btn" title="Sync">⭳</button>
+    </header>
 
-    <!-- Dashboard -->
-    <section id="dashboard">
-      <h1>Dashboard</h1>
-      <div id="summary" class="grid"></div>
-    </section>
+    <main>
+      <section id="dashboard" class="card section">
+        <div class="section-header">
+          <h2>Dashboard</h2>
+          <div class="small">Overview</div>
+        </div>
+        <div id="summary" class="summary-grid"></div>
 
-    <!-- Transactions -->
-    <section id="transactions">
-      <h1>Transactions</h1>
-      <div id="tx-list"></div>
-    </section>
+        <div class="card glass mt-12 p-8">
+          <div class="section-inline">
+            <div>
+              <h3>Quick Add</h3>
+              <div class="muted">Tap + to add a transaction fast</div>
+            </div>
+            <div>
+              <button id="quick-income" class="btn success small">+Income</button>
+              <button id="quick-expense" class="btn danger small">-Expense</button>
+            </div>
+          </div>
+          <div id="lottie-empty" class="lottie-small"></div>
+        </div>
+      </section>
 
-    <!-- Planner -->
-    <section id="planner">
-      <h1>Planner</h1>
-      <div id="planner-body"></div>
-    </section>
+      <section id="transactions" class="card section">
+        <div class="section-header">
+          <h2>Transactions</h2>
+          <div class="controls">
+            <input id="search" placeholder="Search transactions" class="input" />
+            <select id="filterCategory" class="input">
+              <option value="">All categories</option>
+            </select>
+          </div>
+        </div>
+        <div id="tx-list" class="tx-list"></div>
+      </section>
 
-    <!-- Analytics -->
-    <section id="analytics">
-      <h1>Analytics</h1>
-      <canvas id="spending-chart"></canvas>
-    </section>
+      <section id="planner" class="card section">
+        <div class="section-header">
+          <h2>Planner</h2>
+          <div class="small">Scheduled & future</div>
+        </div>
+        <div id="planner-list"></div>
+      </section>
 
-    <!-- Settings -->
-    <section id="settings">
-      <h1>Settings</h1>
-      <button onclick="initGoogleSync()">Enable Google Drive Sync</button>
-    </section>
+      <section id="analytics" class="card section">
+        <div class="section-header">
+          <h2>Analytics</h2>
+          <div class="small">Spending trends</div>
+        </div>
+        <canvas id="chart-spend" height="160"></canvas>
+        <div id="insights" class="insights"></div>
+      </section>
 
+      <section id="settings" class="card section">
+        <div class="section-header">
+          <h2>Settings</h2>
+          <div class="small">Privacy & backup</div>
+        </div>
+
+        <div class="row">
+          <label>Google Drive Backup</label>
+          <div>
+            <button id="connectGoogle" class="btn">Connect</button>
+            <button id="backupNow" class="btn">Backup Now</button>
+            <button id="restoreNow" class="btn">Restore</button>
+          </div>
+        </div>
+
+        <div class="row mt8">
+          <label>Theme</label>
+          <div>
+            <button id="themeDefault" class="btn small">Default</button>
+            <button id="themeDark" class="btn small">Dark</button>
+            <button id="clearData" class="btn small danger">Clear Data</button>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <button id="fab" class="fab" aria-label="Add transaction">+</button>
+
+    <!-- Modal: Add / Edit -->
+    <div id="modal" class="modal hidden">
+      <div class="modal-backdrop"></div>
+      <div class="modal-sheet card">
+        <div class="modal-head">
+          <h3 id="modal-title">Add Transaction</h3>
+          <button id="modal-close" class="icon-btn">✕</button>
+        </div>
+        <div class="modal-body">
+          <label>Description</label>
+          <input id="m-desc" class="input" />
+          <div class="row gap">
+            <div style="flex:1">
+              <label>Amount</label>
+              <input id="m-amount" type="number" class="input" />
+            </div>
+            <div style="width:130px">
+              <label>Type</label>
+              <select id="m-type" class="input">
+                <option value="expense">Expense</option>
+                <option value="income">Income</option>
+              </select>
+            </div>
+          </div>
+          <label>Category</label>
+          <select id="m-category" class="input"></select>
+
+          <div class="row gap mt8">
+            <button id="saveTx" class="btn success">Save</button>
+            <button id="saveAndClose" class="btn">Save & Close</button>
+            <button id="deleteTx" class="btn danger hidden">Delete</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <footer class="bottom-nav">
+      <button class="nav-btn" data-target="dashboard">🏠</button>
+      <button class="nav-btn" data-target="transactions">📋</button>
+      <button class="nav-btn" data-target="planner">📅</button>
+      <button class="nav-btn" data-target="analytics">📈</button>
+      <button class="nav-btn" data-target="settings">⚙️</button>
+    </footer>
   </div>
 
-  <!-- Floating Action Button -->
-  <button id="fab">+</button>
-
-  <!-- External libs -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="https://accounts.google.com/gsi/client" async defer></script>
-
-  <!-- App scripts -->
+  <script src="db.js"></script>
   <script src="ai.js"></script>
   <script src="drive-sync.js"></script>
   <script src="app.js"></script>
