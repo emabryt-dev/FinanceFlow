@@ -41,7 +41,24 @@ class FinanceFlow {
         this.init();
     }
 
-    init() {
+init() {
+    // Wait a bit longer for DOM to be fully ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', () => {
+            this.setupEventListeners();
+            this.setupServiceWorker();
+            this.initializeGoogleAuth();
+            this.calculateMonthlyRollover();
+            this.calculateAIInsights();
+            this.updateDashboard();
+            this.renderCategoryList();
+            this.setupSync();
+            
+            // Initialize tabs
+            this.showTab('dashboard');
+        });
+    } else {
+        // DOM is already ready
         this.setupEventListeners();
         this.setupServiceWorker();
         this.initializeGoogleAuth();
@@ -54,6 +71,7 @@ class FinanceFlow {
         // Initialize tabs
         this.showTab('dashboard');
     }
+}
 
     // Service Worker setup with error handling
     setupServiceWorker() {
@@ -1196,55 +1214,66 @@ findCategorizationPatterns() {
     }
 
     // UI Management
-    updateDashboard() {
+updateDashboard() {
+    // Add null checks for all dashboard elements
+    try {
         this.updateQuickStats();
         this.updateRecentTransactions();
         this.updateAIInsights();
         this.updateHealthScore();
         this.updateRolloverDisplay();
         this.updateCategoryBreakdowns();
+    } catch (error) {
+        console.warn('Error updating dashboard:', error);
     }
+}
 
-    updateQuickStats() {
-        const monthlyData = this.getMonthlySummary(new Date());
-        
-        document.getElementById('quickIncome').textContent = 
-            this.formatCurrency(monthlyData.income);
-        document.getElementById('quickExpense').textContent = 
-            this.formatCurrency(monthlyData.expenses);
-        document.getElementById('quickBalance').textContent = 
-            this.formatCurrency(monthlyData.balance);
+updateQuickStats() {
+    const monthlyData = this.getMonthlySummary(new Date());
+    
+    const quickIncome = document.getElementById('quickIncome');
+    const quickExpense = document.getElementById('quickExpense');
+    const quickBalance = document.getElementById('quickBalance');
+    
+    if (quickIncome) quickIncome.textContent = this.formatCurrency(monthlyData.income);
+    if (quickExpense) quickExpense.textContent = this.formatCurrency(monthlyData.expenses);
+    if (quickBalance) quickBalance.textContent = this.formatCurrency(monthlyData.balance);
+}
+
+updateRecentTransactions() {
+    const container = document.getElementById('recentTransactions');
+    if (!container) {
+        console.warn('recentTransactions container not found');
+        return;
     }
-
-    updateRecentTransactions() {
-        const container = document.getElementById('recentTransactions');
-        const recent = this.transactions.slice(-5).reverse();
-        
-        if (recent.length === 0) {
-            container.innerHTML = '<div class="text-center text-muted p-3">No recent transactions</div>';
-            return;
-        }
-        
-        container.innerHTML = recent.map(transaction => {
-            const originalIndex = this.transactions.indexOf(transaction);
-            return `
-                <div class="transaction-item" onclick="editTransaction(${originalIndex})">
-                    <div class="transaction-icon ${transaction.type}">
-                        <i class="bi ${this.getCategoryIcon(transaction.category)}"></i>
-                    </div>
-                    <div class="transaction-details">
-                        <div class="transaction-title">${transaction.description}</div>
-                        <div class="transaction-meta">
-                            ${transaction.category} • ${this.formatDate(transaction.date)}
-                        </div>
-                    </div>
-                    <div class="transaction-amount ${transaction.type}">
-                        ${transaction.type === 'income' ? '+' : '-'}${this.formatCurrency(transaction.amount)}
+    
+    const recent = this.transactions.slice(-5).reverse();
+    
+    if (recent.length === 0) {
+        container.innerHTML = '<div class="text-center text-muted p-3">No recent transactions</div>';
+        return;
+    }
+    
+    container.innerHTML = recent.map(transaction => {
+        const originalIndex = this.transactions.indexOf(transaction);
+        return `
+            <div class="transaction-item" onclick="editTransaction(${originalIndex})">
+                <div class="transaction-icon ${transaction.type}">
+                    <i class="bi ${this.getCategoryIcon(transaction.category)}"></i>
+                </div>
+                <div class="transaction-details">
+                    <div class="transaction-title">${transaction.description}</div>
+                    <div class="transaction-meta">
+                        ${transaction.category} • ${this.formatDate(transaction.date)}
                     </div>
                 </div>
-            `;
-        }).join('');
-    }
+                <div class="transaction-amount ${transaction.type}">
+                    ${transaction.type === 'income' ? '+' : '-'}${this.formatCurrency(transaction.amount)}
+                </div>
+            </div>
+        `;
+    }).join('');
+}
 
     updateCategoryBreakdowns() {
         // Income Breakdown
