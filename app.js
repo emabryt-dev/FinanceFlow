@@ -3657,15 +3657,22 @@ class FinanceFlow {
         chartYear.addEventListener('change', () => this.renderEnhancedAnalytics());
     }
 
-    // Service Worker
+    // Service Worker setup with error handling
     setupServiceWorker() {
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('/service-worker.js')
                 .then(registration => {
                     console.log('SW registered: ', registration);
+                    
+                    // Check for updates
+                    registration.addEventListener('updatefound', () => {
+                        const newWorker = registration.installing;
+                        console.log('SW update found!', newWorker);
+                    });
                 })
                 .catch(registrationError => {
                     console.log('SW registration failed: ', registrationError);
+                    // Don't show error to user - app works without SW
                 });
         }
     }
