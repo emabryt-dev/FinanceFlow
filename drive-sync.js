@@ -18,12 +18,46 @@ function showLoader() {
     renderer: 'svg',
     loop: true,
     autoplay: true,
-    path: "https://lottie.host/9b40ac9f-7357-4f4a-b3e5-1f4072bb6a88/xIu2Z1m7iR.json" // ✅ loading animation
+    path: "https://lottie.host/9b40ac9f-7357-4f4a-b3e5-1f4072bb6a88/xIu2Z1m7iR.json" // loading animation
   });
 }
+
 function hideLoader() {
   const loader = document.getElementById("drive-loader");
   if (loader) loader.remove();
+}
+
+// ✅ Utility: show success animation overlay
+function showSuccess(message="Success!") {
+  const overlay = document.createElement('div');
+  overlay.style.position = "fixed";
+  overlay.style.inset = "0";
+  overlay.style.background = "rgba(0,0,0,0.6)";
+  overlay.style.zIndex = "10000";
+  document.body.appendChild(overlay);
+
+  const anim = lottie.loadAnimation({
+    container: overlay,
+    renderer: 'svg',
+    loop: false,
+    autoplay: true,
+    path: "https://lottie.host/1a8eac0a-1c1b-44ef-8bfa-2abf5a318be5/ZuO13SpWvA.json" // success animation
+  });
+
+  // auto-destroy after 2.5s
+  setTimeout(()=>overlay.remove(), 2500);
+
+  // optional: also show a small text
+  const msg = document.createElement('div');
+  msg.innerText = message;
+  msg.style.position = "absolute";
+  msg.style.bottom = "30px";
+  msg.style.width = "100%";
+  msg.style.textAlign = "center";
+  msg.style.color = "white";
+  msg.style.fontSize = "16px";
+  msg.style.fontWeight = "600";
+  overlay.appendChild(msg);
 }
 
 // ✅ Init Google Client
@@ -73,11 +107,12 @@ async function backupToDrive() {
     });
     const json = await res.json();
     console.log('backup result', json);
-    alert('✅ Backup uploaded to Google Drive.');
-  } catch (err) {
-    alert('❌ Backup failed: ' + err.message);
-  } finally {
+
     hideLoader();
+    showSuccess("Backup completed!");
+  } catch (err) {
+    hideLoader();
+    alert('❌ Backup failed: ' + err.message);
   }
 }
 
@@ -105,7 +140,6 @@ async function restoreFromDrive() {
       headers: { Authorization: `Bearer ${FF_ACCESS_TOKEN}` }
     });
     const text = await res.text();
-    hideLoader();
 
     const parsed = JSON.parse(text);
     if (parsed.transactions && Array.isArray(parsed.transactions)) {
@@ -113,9 +147,11 @@ async function restoreFromDrive() {
       for (const tx of parsed.transactions) {
         await window.FFDB.put('transactions', tx);
       }
-      alert('✅ Restored backup from Drive. Reloading...');
-      location.reload();
+      hideLoader();
+      showSuccess("Restore successful!");
+      setTimeout(()=>location.reload(), 2500);
     } else {
+      hideLoader();
       alert('❌ Backup format invalid.');
     }
   } catch (err) {
