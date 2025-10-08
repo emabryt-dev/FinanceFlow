@@ -4,54 +4,43 @@
   <meta charset="UTF-8">
   <title>Finance Flow</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="google-signin-client_id" content="86191691449-lop8lu293h8956071sr0jllc2qsdpc2e.apps.googleusercontent.com">
   
-  <!-- Styles & Icons -->
+  <!-- PWA Meta Tags -->
+  <meta name="theme-color" content="#4361EE">
+  <link rel="manifest" href="manifest.json">
+  
+  <!-- Styles -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
-  <link rel="manifest" href="manifest.json">
   
   <!-- Google Identity Services -->
   <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
-<body class="theme-light">
-  <!-- Loading Screen -->
-  <div id="loadingScreen" class="loading-screen">
-    <div class="loading-content">
-      <div id="loadingAnimation" class="loading-animation"></div>
-      <h3>Finance Flow</h3>
-      <p>Streamlining your finances...</p>
-    </div>
-  </div>
-
+<body>
   <!-- Enhanced Navigation -->
   <nav class="navbar navbar-glass">
     <div class="container-fluid">
       <a class="navbar-brand" href="#">
-        <i class="bi bi-cash-coin me-2"></i>Finance Flow
+        <i class="bi bi-graph-up-arrow"></i>
+        Finance Flow
       </a>
-      <div class="d-flex align-items-center gap-3">
-        <!-- Quick Actions -->
-        <div class="quick-actions">
-          <button class="btn btn-sm btn-glass" onclick="showAISuggestions()">
-            <i class="bi bi-robot"></i>
-          </button>
-          <button class="btn btn-sm btn-glass" onclick="manualSync()">
-            <i class="bi bi-cloud-arrow-up"></i>
-          </button>
+      <div class="d-flex align-items-center">
+        <!-- Sync Status -->
+        <div class="sync-status me-3">
+          <i id="syncStatusIcon" class="bi bi-cloud"></i>
         </div>
         
-        <!-- Profile with Enhanced Dropdown -->
+        <!-- Profile -->
         <div class="dropdown">
           <button class="btn p-0 border-0" type="button" id="profileDropdown" data-bs-toggle="dropdown">
-            <div class="profile-pic-container glass-morphism">
-              <i class="bi bi-person-circle profile-icon"></i>
+            <div class="profile-pic">
+              <i class="bi bi-person-circle"></i>
             </div>
           </button>
-          <ul class="dropdown-menu dropdown-menu-glass">
+          <ul class="dropdown-menu dropdown-menu-end">
             <li id="signedInUser" class="dropdown-item-text d-none">
-              <small class="text-muted">Signed in as:</small>
+              <small>Signed in as:</small>
               <div id="userEmail" class="fw-bold"></div>
             </li>
             <li><hr class="dropdown-divider"></li>
@@ -65,117 +54,30 @@
                 <i class="bi bi-box-arrow-right me-2"></i>Sign out
               </a>
             </li>
-            <li><hr class="dropdown-divider"></li>
-            <li>
-              <a class="dropdown-item" href="#" onclick="showAchievements()">
-                <i class="bi bi-trophy me-2"></i>Achievements
-              </a>
-            </li>
           </ul>
         </div>
       </div>
     </div>
   </nav>
 
-  <!-- Floating Action Button -->
-  <div class="fab-container">
-    <button class="fab-primary" id="mainFab">
-      <i class="bi bi-plus-lg"></i>
-    </button>
-    <div class="fab-menu">
-      <button class="fab-item btn-income" onclick="quickAddTransaction('income')">
-        <i class="bi bi-arrow-down-circle"></i>
-        <span class="fab-label">Income</span>
-      </button>
-      <button class="fab-item btn-expense" onclick="quickAddTransaction('expense')">
-        <i class="bi bi-arrow-up-circle"></i>
-        <span class="fab-label">Expense</span>
-      </button>
-      <button class="fab-item btn-transfer" onclick="quickAddTransfer()">
-        <i class="bi bi-arrow-left-right"></i>
-        <span class="fab-label">Transfer</span>
-      </button>
-    </div>
-  </div>
-
   <!-- Toast Container -->
   <div class="toast-container" id="toastContainer"></div>
 
-  <!-- Enhanced Modals -->
-  <div class="modal fade glass-modal" id="addTransactionModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content glass-morphism">
-        <div class="modal-header">
-          <h5 class="modal-title"><i class="bi bi-plus-circle"></i> Add Transaction</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-        </div>
-        <div class="modal-body">
-          <form id="transactionForm" autocomplete="off">
-            <input type="hidden" id="editTransactionIndex" value="-1">
-            <div class="form-glass-group">
-              <label for="dateInput" class="form-label">Date</label>
-              <input type="date" class="form-control glass-input" id="dateInput" required>
-            </div>
-            <div class="form-glass-group">
-              <label for="descInput" class="form-label">Description</label>
-              <input type="text" class="form-control glass-input" id="descInput" required 
-                     placeholder="Enter transaction description...">
-            </div>
-            <div class="row g-2">
-              <div class="col-6">
-                <div class="form-glass-group">
-                  <label class="form-label">Type</label>
-                  <select class="form-select glass-input" id="typeInput" required>
-                    <option value="income">Income</option>
-                    <option value="expense">Expense</option>
-                  </select>
-                </div>
-              </div>
-              <div class="col-6">
-                <div class="form-glass-group">
-                  <label for="amountInput" class="form-label">Amount</label>
-                  <input type="number" class="form-control glass-input" id="amountInput" required step="0.01">
-                </div>
-              </div>
-            </div>
-            <div class="form-glass-group">
-              <label for="categoryInput" class="form-label">Category</label>
-              <select class="form-select glass-input" id="categoryInput" required>
-                <!-- Categories populate here -->
-              </select>
-            </div>
-            <div id="aiCategorySuggestion" class="ai-suggestion d-none">
-              <small>AI Suggestion: <span id="suggestedCategory"></span></small>
-              <button type="button" class="btn btn-sm btn-outline-primary ms-2" onclick="applyAISuggestion()">
-                Apply
-              </button>
-            </div>
-          </form>
-        </div>
-        <div class="modal-footer">
-          <button type="submit" form="transactionForm" class="btn btn-success btn-glow">
-            <i class="bi bi-check-circle"></i> Add Transaction
-          </button>
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- AI Insights Modal -->
-  <div class="modal fade glass-modal" id="aiInsightsModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered modal-lg">
-      <div class="modal-content glass-morphism">
-        <div class="modal-header">
-          <h5 class="modal-title"><i class="bi bi-robot"></i> AI Financial Insights</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-        </div>
-        <div class="modal-body">
-          <div id="aiInsightsContent">
-            <!-- AI insights will be populated here -->
-          </div>
-        </div>
-      </div>
+  <!-- Enhanced FAB -->
+  <div class="fab-container">
+    <button class="fab-primary" id="mainFab">
+      <i class="bi bi-plus"></i>
+    </button>
+    <div class="fab-menu">
+      <button class="fab-item income" onclick="quickAddTransaction('income')">
+        <i class="bi bi-arrow-down-circle"></i>
+      </button>
+      <button class="fab-item expense" onclick="quickAddTransaction('expense')">
+        <i class="bi bi-arrow-up-circle"></i>
+      </button>
+      <button class="fab-item transfer" onclick="quickAddTransfer()">
+        <i class="bi bi-arrow-left-right"></i>
+      </button>
     </div>
   </div>
 
@@ -183,233 +85,121 @@
   <div class="main-content container-fluid">
     
     <!-- Dashboard Tab -->
-    <div id="tab-dashboard" class="tab-page active">
-      <div class="row g-3">
-        <!-- Wealth Overview Card -->
-        <div class="col-12">
-          <div class="card glass-morphism wealth-overview">
-            <div class="card-body">
-              <div class="row align-items-center">
-                <div class="col-8">
-                  <h6 class="card-subtitle">Net Wealth</h6>
-                  <h2 class="card-title" id="netWealth">0</h2>
-                  <div class="wealth-change" id="wealthChange">
-                    <i class="bi bi-arrow-up-right"></i>
-                    <span>0% this month</span>
-                  </div>
-                </div>
-                <div class="col-4 text-end">
-                  <div class="wealth-chart-mini">
-                    <!-- Mini chart will be rendered here -->
-                  </div>
-                </div>
-              </div>
-            </div>
+    <div id="tab-dashboard" class="tab-page">
+      <!-- Financial Health Score -->
+      <div class="glass-card health-score-card">
+        <div class="health-score-header">
+          <h6>Financial Health</h6>
+          <i class="bi bi-heart-pulse"></i>
+        </div>
+        <div class="health-score-value" id="healthScore">85</div>
+        <div class="health-score-progress">
+          <div class="progress">
+            <div class="progress-bar" style="width: 85%"></div>
           </div>
         </div>
+        <div class="health-score-label">Excellent</div>
+      </div>
 
-        <!-- Quick Stats -->
-        <div class="col-6">
-          <div class="card glass-morphism stat-card income-stat">
-            <div class="card-body">
-              <i class="bi bi-arrow-down-circle stat-icon"></i>
-              <div class="stat-content">
-                <div class="stat-value" id="totalIncome">0</div>
-                <div class="stat-label">Income</div>
-              </div>
+      <!-- Quick Stats -->
+      <div class="row g-3 mb-4">
+        <div class="col-4">
+          <div class="glass-card stat-card">
+            <div class="stat-icon income">
+              <i class="bi bi-arrow-down-circle"></i>
             </div>
+            <div class="stat-value" id="quickIncome">0</div>
+            <div class="stat-label">Income</div>
           </div>
         </div>
-        <div class="col-6">
-          <div class="card glass-morphism stat-card expense-stat">
-            <div class="card-body">
-              <i class="bi bi-arrow-up-circle stat-icon"></i>
-              <div class="stat-content">
-                <div class="stat-value" id="totalExpense">0</div>
-                <div class="stat-label">Expenses</div>
-              </div>
+        <div class="col-4">
+          <div class="glass-card stat-card">
+            <div class="stat-icon expense">
+              <i class="bi bi-arrow-up-circle"></i>
             </div>
+            <div class="stat-value" id="quickExpense">0</div>
+            <div class="stat-label">Expense</div>
           </div>
         </div>
+        <div class="col-4">
+          <div class="glass-card stat-card">
+            <div class="stat-icon balance">
+              <i class="bi bi-wallet2"></i>
+            </div>
+            <div class="stat-value" id="quickBalance">0</div>
+            <div class="stat-label">Balance</div>
+          </div>
+        </div>
+      </div>
 
-        <!-- AI Suggestions Card -->
-        <div class="col-12">
-          <div class="card glass-morphism ai-suggestions-card">
-            <div class="card-header">
-              <i class="bi bi-magic"></i> Smart Suggestions
-            </div>
-            <div class="card-body">
-              <div id="quickAISuggestions">
-                <!-- Quick AI suggestions will appear here -->
-              </div>
-            </div>
-          </div>
+      <!-- AI Insights -->
+      <div class="glass-card ai-insights-card">
+        <div class="card-header">
+          <h6><i class="bi bi-robot"></i> AI Insights</h6>
+          <button class="btn btn-sm btn-outline-primary" onclick="showAIDetails()">View All</button>
         </div>
+        <div id="aiQuickInsights" class="ai-insights-content">
+          <!-- AI insights will populate here -->
+        </div>
+      </div>
 
-        <!-- Spending Breakdown -->
-        <div class="col-12">
-          <div class="card glass-morphism">
-            <div class="card-header">
-              <i class="bi bi-pie-chart"></i> Spending Breakdown
-            </div>
-            <div class="card-body">
-              <div class="chart-container">
-                <canvas id="spendingChart"></canvas>
-              </div>
-            </div>
-          </div>
+      <!-- Recent Transactions -->
+      <div class="glass-card">
+        <div class="card-header">
+          <h6>Recent Transactions</h6>
+          <button class="btn btn-sm btn-link" onclick="showTab('transactions')">View All</button>
+        </div>
+        <div id="recentTransactions" class="recent-transactions">
+          <!-- Recent transactions will populate here -->
         </div>
       </div>
     </div>
 
-    <!-- Transactions Tab -->
-    <div id="tab-transactions" class="tab-page">
-      <div class="transactions-header">
-        <h4>Transactions</h4>
-        <div class="transaction-filters">
-          <select class="form-select glass-input" id="transactionFilter">
-            <option value="all">All Transactions</option>
-            <option value="income">Income</option>
-            <option value="expense">Expenses</option>
-          </select>
-        </div>
-      </div>
-      <div class="transactions-list" id="transactionsList">
-        <!-- Transactions will be populated here -->
-      </div>
+    <!-- Other tabs will be implemented similarly -->
+    <div id="tab-transactions" class="tab-page d-none">
+      <!-- Transactions content -->
     </div>
-
-    <!-- Analytics Tab -->
-    <div id="tab-analytics" class="tab-page">
-      <div class="analytics-header">
-        <h4>Financial Analytics</h4>
-      </div>
-      <div class="row g-3">
-        <div class="col-12">
-          <div class="card glass-morphism">
-            <div class="card-header">
-              <i class="bi bi-graph-up"></i> Financial Health
-            </div>
-            <div class="card-body">
-              <div class="health-score">
-                <div class="score-circle">
-                  <div class="score-value" id="healthScore">85</div>
-                  <div class="score-label">Score</div>
-                </div>
-                <div class="health-details">
-                  <div class="health-metric">
-                    <span>Savings Rate</span>
-                    <span class="metric-value" id="savingsRate">25%</span>
-                  </div>
-                  <div class="health-metric">
-                    <span>Spending Trend</span>
-                    <span class="metric-value positive" id="spendingTrend">-12%</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        <div class="col-12">
-          <div class="card glass-morphism">
-            <div class="card-header">
-              <i class="bi bi-calendar"></i> Monthly Trends
-            </div>
-            <div class="card-body">
-              <canvas id="monthlyTrendChart"></canvas>
-            </div>
-          </div>
-        </div>
-      </div>
+    
+    <div id="tab-analytics" class="tab-page d-none">
+      <!-- Analytics content -->
     </div>
-
-    <!-- Planner Tab -->
-    <div id="tab-planner" class="tab-page">
-      <div class="planner-header">
-        <h4>Financial Planner</h4>
-      </div>
-      <div class="row g-3">
-        <div class="col-12">
-          <div class="card glass-morphism">
-            <div class="card-header">
-              <i class="bi bi-bullseye"></i> Goals & Targets
-            </div>
-            <div class="card-body">
-              <div id="goalsList">
-                <!-- Goals will be populated here -->
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+    
+    <div id="tab-planner" class="tab-page d-none">
+      <!-- Planner content -->
     </div>
-
-    <!-- Settings Tab -->
-    <div id="tab-settings" class="tab-page">
-      <div class="settings-header">
-        <h4>Settings</h4>
-      </div>
-      <div class="row g-3">
-        <div class="col-12">
-          <div class="card glass-morphism">
-            <div class="card-body">
-              <div class="setting-item">
-                <label>Theme</label>
-                <select class="form-select glass-input" id="themeSelect">
-                  <option value="light">Light</option>
-                  <option value="dark">Dark</option>
-                  <option value="auto">Auto</option>
-                </select>
-              </div>
-              <div class="setting-item">
-                <label>Currency</label>
-                <select class="form-select glass-input" id="currencySelect">
-                  <option value="PKR">Pakistani Rupee</option>
-                  <option value="USD">US Dollar</option>
-                  <option value="EUR">Euro</option>
-                </select>
-              </div>
-              <div class="setting-item">
-                <button class="btn btn-outline-primary w-100" onclick="exportData()">
-                  <i class="bi bi-download"></i> Export Data
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+    
+    <div id="tab-debt" class="tab-page d-none">
+      <!-- Debt content -->
+    </div>
+    
+    <div id="tab-settings" class="tab-page d-none">
+      <!-- Settings content -->
     </div>
   </div>
 
   <!-- Enhanced Bottom Navigation -->
-  <nav class="bottom-nav glass-morphism">
-    <div class="nav-container">
-      <button class="nav-item active" data-tab="dashboard">
-        <i class="bi bi-house"></i>
-        <span>Dashboard</span>
-      </button>
-      <button class="nav-item" data-tab="transactions">
-        <i class="bi bi-wallet2"></i>
-        <span>Transactions</span>
-      </button>
-      <button class="nav-item" data-tab="analytics">
-        <i class="bi bi-graph-up"></i>
-        <span>Analytics</span>
-      </button>
-      <button class="nav-item" data-tab="planner">
-        <i class="bi bi-calendar-check"></i>
-        <span>Planner</span>
-      </button>
-      <button class="nav-item" data-tab="settings">
-        <i class="bi bi-gear"></i>
-        <span>Settings</span>
-      </button>
-    </div>
+  <nav class="bottom-nav">
+    <button class="nav-btn active" data-tab="dashboard">
+      <i class="bi bi-house"></i>
+      <span>Dashboard</span>
+    </button>
+    <button class="nav-btn" data-tab="transactions">
+      <i class="bi bi-list-ul"></i>
+      <span>Transactions</span>
+    </button>
+    <button class="nav-btn" data-tab="analytics">
+      <i class="bi bi-graph-up"></i>
+      <span>Analytics</span>
+    </button>
+    <button class="nav-btn" data-tab="planner">
+      <i class="bi bi-calendar-check"></i>
+      <span>Planner</span>
+    </button>
+    <button class="nav-btn" data-tab="settings">
+      <i class="bi bi-gear"></i>
+      <span>Settings</span>
+    </button>
   </nav>
-
-  <!-- Confetti Canvas -->
-  <canvas id="confettiCanvas"></canvas>
 
   <!-- Scripts -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"></script>
