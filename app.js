@@ -1,45 +1,52 @@
 // Finance Flow - Complete Financial Management App
 class FinanceFlow {
-    constructor() {
-        // Initialize all data structures
-        this.transactions = this.loadData('transactions') || [];
-        this.categories = this.loadData('categories') || this.getDefaultCategories();
-        this.settings = this.loadData('settings') || this.getDefaultSettings();
-        this.monthlyBudgets = this.loadData('monthlyBudgets') || {};
-        this.futureTransactions = this.loadData('futureTransactions') || { income: [], expenses: [] };
-        this.loans = this.loadData('loans') || { given: [], taken: [] };
-        
-        // Analytics and UI state
-        this.aiInsights = [];
-        this.isOnline = navigator.onLine;
-        this.googleUser = null;
-        this.googleAuth = null;
-        this.syncInProgress = false;
-        this.pendingSync = false;
-        this.lastBackupMonth = null;
-        this.lastSyncTime = null;
-        
-        // UI state
-        this.currentCategoryFilter = 'all';
-        this.plannerTimeframe = '1year';
-        this.currentCategoryView = null;
-        this.currentCategoryTransactions = [];
-        
-        // Chart instances
-        this.overviewChart = null;
-        this.incomePieChart = null;
-        this.expensePieChart = null;
-        this.healthTrendChart = null;
-        this.categoryTrendChart = null;
-        this.comparisonChart = null;
-        this.mainChart = null;
-        
-        // Google Drive constants
-        this.GOOGLE_DRIVE_FILE_NAME = 'finance_flow_data.json';
-        this.GOOGLE_CLIENT_ID = '86191691449-lop8lu293h8956071sr0jllc2qsdpc2e.apps.googleusercontent.com';
-        
-        this.init();
+constructor() {
+    // Initialize all data structures with proper fallbacks
+    this.transactions = this.loadData('transactions') || [];
+    this.categories = this.loadData('categories') || this.getDefaultCategories();
+    this.settings = this.loadData('settings') || this.getDefaultSettings();
+    this.monthlyBudgets = this.loadData('monthlyBudgets') || {};
+    this.futureTransactions = this.loadData('futureTransactions') || { income: [], expenses: [] };
+    this.loans = this.loadData('loans') || { given: [], taken: [] };
+    
+    // Ensure transactions is always an array
+    if (!Array.isArray(this.transactions)) {
+        console.warn('Transactions data corrupted, resetting to empty array');
+        this.transactions = [];
+        this.saveData('transactions', this.transactions);
     }
+    
+    // Analytics and UI state
+    this.aiInsights = [];
+    this.isOnline = navigator.onLine;
+    this.googleUser = null;
+    this.googleAuth = null;
+    this.syncInProgress = false;
+    this.pendingSync = false;
+    this.lastBackupMonth = null;
+    this.lastSyncTime = null;
+    
+    // UI state
+    this.currentCategoryFilter = 'all';
+    this.plannerTimeframe = '1year';
+    this.currentCategoryView = null;
+    this.currentCategoryTransactions = [];
+    
+    // Chart instances
+    this.overviewChart = null;
+    this.incomePieChart = null;
+    this.expensePieChart = null;
+    this.healthTrendChart = null;
+    this.categoryTrendChart = null;
+    this.comparisonChart = null;
+    this.mainChart = null;
+    
+    // Google Drive constants
+    this.GOOGLE_DRIVE_FILE_NAME = 'finance_flow_data.json';
+    this.GOOGLE_CLIENT_ID = '86191691449-lop8lu293h8956071sr0jllc2qsdpc2e.apps.googleusercontent.com';
+    
+    this.init();
+}
 
 init() {
     // Wait a bit longer for DOM to be fully ready
@@ -99,15 +106,20 @@ init() {
     }
 
     // Core Data Management
-    loadData(key) {
-        try {
-            const data = localStorage.getItem(`financeFlow_${key}`);
-            return data ? JSON.parse(data) : null;
-        } catch (error) {
-            console.error(`Error loading ${key}:`, error);
-            return null;
-        }
+loadData(key) {
+    try {
+        const data = localStorage.getItem(`financeFlow_${key}`);
+        if (!data) return null;
+        
+        const parsed = JSON.parse(data);
+        return parsed;
+    } catch (error) {
+        console.error(`Error loading ${key}:`, error);
+        // If data is corrupted, remove it
+        localStorage.removeItem(`financeFlow_${key}`);
+        return null;
     }
+}
 
     saveData(key, data) {
         try {
@@ -3214,7 +3226,8 @@ updateRecentTransactions() {
         this.showTab(initialTab);
     }
 
-    initializeTab(tabName) {
+initializeTab(tabName) {
+    try {
         switch (tabName) {
             case 'transactions':
                 this.renderTransactionsTable();
@@ -3231,11 +3244,14 @@ updateRecentTransactions() {
                 this.renderDebtManagement();
                 break;
             case 'settings':
-                // Initialize settings values
                 this.initializeSettingsValues();
                 break;
         }
+    } catch (error) {
+        console.error(`Error initializing tab ${tabName}:`, error);
+        this.showToast(`Error loading ${tabName} tab`, 'danger');
     }
+}
 
     initializeSettingsValues() {
         // Set current values in settings form
@@ -3351,48 +3367,59 @@ updateRecentTransactions() {
         }
     }
 
-    renderTransactionsTable() {
-        const tbody = document.getElementById('transactionsBody');
-        const noTransactions = document.getElementById('noTransactions');
-        
-        if (!tbody) return;
-        
-        if (this.transactions.length === 0) {
-            tbody.innerHTML = '';
-            if (noTransactions) noTransactions.classList.remove('d-none');
-            return;
-        }
-        
-        if (noTransactions) noTransactions.classList.add('d-none');
-        
-        tbody.innerHTML = this.transactions.slice().reverse().map((tx, idx) => {
-            const originalIndex = this.transactions.length - 1 - idx;
-            
-            // Format date as "DD-MMM" (e.g., "26-Sep")
-            const transactionDate = new Date(tx.date);
-            const formattedDate = isNaN(transactionDate) ? tx.date : 
-                `${transactionDate.getDate()}-${transactionDate.toLocaleString('default', { month: 'short' })}`;
-            
-            const descCell = tx.description.length > 30 ? 
-                `<td class="description-cell" data-fulltext="${tx.description}">${tx.description.substring(0, 30)}...</td>` :
-                `<td>${tx.description}</td>`;
-            
-            return `
-                <tr class="clickable-row" onclick="editTransaction(${originalIndex})">
-                    <td>${formattedDate}</td>
-                    ${descCell}
-                    <td class="fw-bold ${tx.type === 'income' ? 'text-success' : 'text-danger'}">${tx.type}</td>
-                    <td>${tx.category}</td>
-                    <td class="fw-bold">${this.formatCurrency(tx.amount)}</td>
-                    <td>
-                        <button class="btn-action btn-delete" title="Delete" onclick="event.stopPropagation(); removeTransaction(${originalIndex})">
-                            <i class="bi bi-trash"></i>
-                        </button>
-                    </td>
-                </tr>
-            `;
-        }).join('');
+renderTransactionsTable() {
+    const tbody = document.getElementById('transactionsBody');
+    const noTransactions = document.getElementById('noTransactions');
+    
+    if (!tbody) {
+        console.warn('transactionsBody element not found');
+        return;
     }
+    
+    // Add validation for transactions array
+    if (!this.transactions || !Array.isArray(this.transactions)) {
+        console.warn('Transactions data is not available or not an array');
+        tbody.innerHTML = '';
+        if (noTransactions) noTransactions.classList.remove('d-none');
+        return;
+    }
+    
+    if (this.transactions.length === 0) {
+        tbody.innerHTML = '';
+        if (noTransactions) noTransactions.classList.remove('d-none');
+        return;
+    }
+    
+    if (noTransactions) noTransactions.classList.add('d-none');
+    
+    tbody.innerHTML = this.transactions.slice().reverse().map((tx, idx) => {
+        const originalIndex = this.transactions.length - 1 - idx;
+        
+        // Format date as "DD-MMM" (e.g., "26-Sep")
+        const transactionDate = new Date(tx.date);
+        const formattedDate = isNaN(transactionDate) ? tx.date : 
+            `${transactionDate.getDate()}-${transactionDate.toLocaleString('default', { month: 'short' })}`;
+        
+        const descCell = tx.description && tx.description.length > 30 ? 
+            `<td class="description-cell" data-fulltext="${tx.description}">${tx.description.substring(0, 30)}...</td>` :
+            `<td>${tx.description || 'No description'}</td>`;
+        
+        return `
+            <tr class="clickable-row" onclick="editTransaction(${originalIndex})">
+                <td>${formattedDate}</td>
+                ${descCell}
+                <td class="fw-bold ${tx.type === 'income' ? 'text-success' : 'text-danger'}">${tx.type}</td>
+                <td>${tx.category || 'Uncategorized'}</td>
+                <td class="fw-bold">${this.formatCurrency(tx.amount)}</td>
+                <td>
+                    <button class="btn-action btn-delete" title="Delete" onclick="event.stopPropagation(); removeTransaction(${originalIndex})">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </td>
+            </tr>
+        `;
+    }).join('');
+}
 
     adjustTransactionsTable() {
         const tableContainer = document.querySelector('#tab-transactions .table-container');
