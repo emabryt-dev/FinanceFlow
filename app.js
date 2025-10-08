@@ -35,7 +35,7 @@ class FinanceFlow {
         this.mainChart = null;
         
         // Google Drive constants
-        this.GOOGLE_DRIVE_FILE_NAME = 'wealth_command_data.json';
+        this.GOOGLE_DRIVE_FILE_NAME = 'finance_flow_data.json';
         this.GOOGLE_CLIENT_ID = '86191691449-lop8lu293h8956071sr0jllc2qsdpc2e.apps.googleusercontent.com';
         
         this.init();
@@ -53,6 +53,32 @@ class FinanceFlow {
         
         // Initialize tabs
         this.showTab('dashboard');
+    }
+
+    // Service Worker setup with error handling
+    setupServiceWorker() {
+        if ('serviceWorker' in navigator) {
+            // Use relative path for GitHub Pages
+            const swPath = './service-worker.js';
+            
+            navigator.serviceWorker.register(swPath)
+                .then(registration => {
+                    console.log('SW registered successfully: ', registration);
+                    
+                    // Check for updates
+                    registration.addEventListener('updatefound', () => {
+                        const newWorker = registration.installing;
+                        console.log('New service worker found:', newWorker);
+                    });
+                })
+                .catch(registrationError => {
+                    console.log('SW registration failed: ', registrationError);
+                    // Don't show error to user - app works without SW
+                    // This is normal for first deployment or if SW is not available
+                });
+        } else {
+            console.log('Service workers not supported');
+        }
     }
 
     // Core Data Management
@@ -1206,90 +1232,96 @@ class FinanceFlow {
         // Income Breakdown
         const incomeBreakdown = document.getElementById("incomeBreakdown");
         const noIncomeMsg = document.getElementById("noIncomeCategories");
-        incomeBreakdown.innerHTML = "";
-        
-        const incomeCategories = this.categories.filter(cat => cat.type === "income");
-        let hasIncomeData = false;
-        
-        if (incomeCategories.length === 0) {
-            noIncomeMsg.style.display = 'block';
-        } else {
-            noIncomeMsg.style.display = 'none';
+        if (incomeBreakdown) {
+            incomeBreakdown.innerHTML = "";
             
-            incomeCategories.forEach(cat => {
-                const catAmount = this.transactions
-                    .filter(tx => tx.category === cat.name && tx.type === "income")
-                    .reduce((sum, tx) => sum + tx.amount, 0);
-                
-                if (catAmount > 0) {
-                    hasIncomeData = true;
-                    
-                    const item = document.createElement("div");
-                    item.className = "breakdown-item";
-                    item.onclick = (e) => {
-                        e.stopPropagation();
-                        this.showCategoryTransactions('income', cat.name);
-                    };
-                    item.innerHTML = `
-                        <span class="breakdown-category">${cat.name}</span>
-                        <span class="breakdown-amount">${this.formatCurrency(catAmount)}</span>
-                    `;
-                    incomeBreakdown.appendChild(item);
-                }
-            });
+            const incomeCategories = this.categories.filter(cat => cat.type === "income");
+            let hasIncomeData = false;
             
-            if (!hasIncomeData) {
-                noIncomeMsg.style.display = 'block';
+            if (incomeCategories.length === 0) {
+                if (noIncomeMsg) noIncomeMsg.style.display = 'block';
             } else {
-                noIncomeMsg.style.display = 'none';
+                if (noIncomeMsg) noIncomeMsg.style.display = 'none';
+                
+                incomeCategories.forEach(cat => {
+                    const catAmount = this.transactions
+                        .filter(tx => tx.category === cat.name && tx.type === "income")
+                        .reduce((sum, tx) => sum + tx.amount, 0);
+                    
+                    if (catAmount > 0) {
+                        hasIncomeData = true;
+                        
+                        const item = document.createElement("div");
+                        item.className = "breakdown-item";
+                        item.onclick = (e) => {
+                            e.stopPropagation();
+                            this.showCategoryTransactions('income', cat.name);
+                        };
+                        item.innerHTML = `
+                            <span class="breakdown-category">${cat.name}</span>
+                            <span class="breakdown-amount">${this.formatCurrency(catAmount)}</span>
+                        `;
+                        incomeBreakdown.appendChild(item);
+                    }
+                });
+                
+                if (!hasIncomeData) {
+                    if (noIncomeMsg) noIncomeMsg.style.display = 'block';
+                } else {
+                    if (noIncomeMsg) noIncomeMsg.style.display = 'none';
+                }
             }
         }
 
         // Expense Breakdown
         const expenseBreakdown = document.getElementById("expenseBreakdown");
         const noExpenseMsg = document.getElementById("noExpenseCategories");
-        expenseBreakdown.innerHTML = "";
-        
-        const expenseCategories = this.categories.filter(cat => cat.type === "expense");
-        let hasExpenseData = false;
-        
-        if (expenseCategories.length === 0) {
-            noExpenseMsg.style.display = 'block';
-        } else {
-            noExpenseMsg.style.display = 'none';
+        if (expenseBreakdown) {
+            expenseBreakdown.innerHTML = "";
             
-            expenseCategories.forEach(cat => {
-                const catAmount = this.transactions
-                    .filter(tx => tx.category === cat.name && tx.type === "expense")
-                    .reduce((sum, tx) => sum + tx.amount, 0);
-                
-                if (catAmount > 0) {
-                    hasExpenseData = true;
-                    
-                    const item = document.createElement("div");
-                    item.className = "breakdown-item";
-                    item.onclick = (e) => {
-                        e.stopPropagation();
-                        this.showCategoryTransactions('expense', cat.name);
-                    };
-                    item.innerHTML = `
-                        <span class="breakdown-category">${cat.name}</span>
-                        <span class="breakdown-amount">${this.formatCurrency(catAmount)}</span>
-                    `;
-                    expenseBreakdown.appendChild(item);
-                }
-            });
+            const expenseCategories = this.categories.filter(cat => cat.type === "expense");
+            let hasExpenseData = false;
             
-            if (!hasExpenseData) {
-                noExpenseMsg.style.display = 'block';
+            if (expenseCategories.length === 0) {
+                if (noExpenseMsg) noExpenseMsg.style.display = 'block';
             } else {
-                noExpenseMsg.style.display = 'none';
+                if (noExpenseMsg) noExpenseMsg.style.display = 'none';
+                
+                expenseCategories.forEach(cat => {
+                    const catAmount = this.transactions
+                        .filter(tx => tx.category === cat.name && tx.type === "expense")
+                        .reduce((sum, tx) => sum + tx.amount, 0);
+                    
+                    if (catAmount > 0) {
+                        hasExpenseData = true;
+                        
+                        const item = document.createElement("div");
+                        item.className = "breakdown-item";
+                        item.onclick = (e) => {
+                            e.stopPropagation();
+                            this.showCategoryTransactions('expense', cat.name);
+                        };
+                        item.innerHTML = `
+                            <span class="breakdown-category">${cat.name}</span>
+                            <span class="breakdown-amount">${this.formatCurrency(catAmount)}</span>
+                        `;
+                        expenseBreakdown.appendChild(item);
+                    }
+                });
+                
+                if (!hasExpenseData) {
+                    if (noExpenseMsg) noExpenseMsg.style.display = 'block';
+                } else {
+                    if (noExpenseMsg) noExpenseMsg.style.display = 'none';
+                }
             }
         }
     }
 
     updateAIInsights() {
         const container = document.getElementById('aiQuickInsights');
+        if (!container) return;
+        
         const quickInsights = this.aiInsights.slice(0, 3);
         
         if (quickInsights.length === 0) {
@@ -1624,37 +1656,39 @@ class FinanceFlow {
         totalAmount.textContent = this.formatCurrency(total);
         totalAmount.className = `fw-bold fs-5 ${type === 'income' ? 'text-success' : 'text-danger'}`;
         
-        transactionsList.innerHTML = '';
+        if (transactionsList) transactionsList.innerHTML = '';
         
         if (this.currentCategoryTransactions.length === 0) {
-            noTransactions.classList.remove('d-none');
-            transactionsList.classList.add('d-none');
+            if (noTransactions) noTransactions.classList.remove('d-none');
+            if (transactionsList) transactionsList.classList.add('d-none');
         } else {
-            noTransactions.classList.add('d-none');
-            transactionsList.classList.remove('d-none');
-            
-            this.currentCategoryTransactions.slice().reverse().forEach((tx, idx) => {
-                const item = document.createElement('div');
-                item.className = 'category-transaction-item';
-                item.innerHTML = `
-                    <div class="category-transaction-info">
-                        <div class="fw-bold">${tx.description}</div>
-                        <small class="text-muted">${tx.date} • ${tx.category}</small>
-                    </div>
-                    <div class="category-transaction-actions">
-                        <span class="fw-bold ${type === 'income' ? 'text-success' : 'text-danger'}">
-                            ${this.formatCurrency(tx.amount)}
-                        </span>
-                        <button class="btn-action btn-edit" title="Edit" onclick="editTransactionFromCategory(${tx.originalIndex})">
-                            <i class="bi bi-pencil"></i>
-                        </button>
-                        <button class="btn-action btn-delete" title="Delete" onclick="removeTransactionFromCategory(${tx.originalIndex})">
-                            <i class="bi bi-trash"></i>
-                        </button>
-                    </div>
-                `;
-                transactionsList.appendChild(item);
-            });
+            if (noTransactions) noTransactions.classList.add('d-none');
+            if (transactionsList) {
+                transactionsList.classList.remove('d-none');
+                
+                this.currentCategoryTransactions.slice().reverse().forEach((tx, idx) => {
+                    const item = document.createElement('div');
+                    item.className = 'category-transaction-item';
+                    item.innerHTML = `
+                        <div class="category-transaction-info">
+                            <div class="fw-bold">${tx.description}</div>
+                            <small class="text-muted">${tx.date} • ${tx.category}</small>
+                        </div>
+                        <div class="category-transaction-actions">
+                            <span class="fw-bold ${type === 'income' ? 'text-success' : 'text-danger'}">
+                                ${this.formatCurrency(tx.amount)}
+                            </span>
+                            <button class="btn-action btn-edit" title="Edit" onclick="editTransactionFromCategory(${tx.originalIndex})">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <button class="btn-action btn-delete" title="Delete" onclick="removeTransactionFromCategory(${tx.originalIndex})">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
+                    `;
+                    transactionsList.appendChild(item);
+                });
+            }
         }
         
         modal.show();
@@ -3411,6 +3445,8 @@ class FinanceFlow {
         } else if (validTabs.includes(savedTab)) {
             initialTab = savedTab;
         }
+        
+       
         
         this.showTab(initialTab);
     }
