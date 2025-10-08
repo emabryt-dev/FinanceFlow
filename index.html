@@ -163,6 +163,38 @@
         </div>
       </div>
 
+      <!-- Income and Expense Breakdown -->
+      <div class="breakdown-container">
+        <div class="row g-3">
+          <div class="col-12 col-md-6">
+            <div class="glass-card breakdown-card income-card" onclick="showCategoryTransactions('income', 'all')">
+              <div class="card-header-enhanced">
+                <i class="bi bi-emoji-smile"></i> Income Breakdown
+              </div>
+              <div class="breakdown-list income-breakdown">
+                <div id="incomeBreakdown">
+                  <!-- Income categories will appear here -->
+                </div>
+                <div id="noIncomeCategories" class="text-center text-muted p-2">No income categories</div>
+              </div>
+            </div>
+          </div>
+          <div class="col-12 col-md-6">
+            <div class="glass-card breakdown-card expense-card" onclick="showCategoryTransactions('expense', 'all')">
+              <div class="card-header-enhanced">
+                <i class="bi bi-emoji-frown"></i> Expense Breakdown
+              </div>
+              <div class="breakdown-list expense-breakdown">
+                <div id="expenseBreakdown">
+                  <!-- Expense categories will appear here -->
+                </div>
+                <div id="noExpenseCategories" class="text-center text-muted p-2">No expense categories</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- Recent Transactions -->
       <div class="glass-card">
         <div class="card-header">
@@ -288,6 +320,10 @@
                   </div>
                   <div class="chart-body">
                     <canvas id="overviewChart" height="300"></canvas>
+                    <div id="overviewChartPlaceholder" class="chart-placeholder d-none">
+                      <i class="bi bi-bar-chart" style="font-size: 3rem; opacity: 0.5;"></i>
+                      <p class="mt-2">Select a chart type to view data visualization</p>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -298,6 +334,10 @@
                   </div>
                   <div class="chart-body">
                     <canvas id="incomePieChart" height="250"></canvas>
+                    <div id="incomePiePlaceholder" class="chart-placeholder d-none">
+                      <i class="bi bi-currency-dollar" style="font-size: 2rem; opacity: 0.5;"></i>
+                      <p class="mt-2">No income data available</p>
+                    </div>
                   </div>
                 </div>
                 <div class="glass-card distribution-card mt-3">
@@ -306,6 +346,24 @@
                   </div>
                   <div class="chart-body">
                     <canvas id="expensePieChart" height="250"></canvas>
+                    <div id="expensePiePlaceholder" class="chart-placeholder d-none">
+                      <i class="bi bi-cart" style="font-size: 2rem; opacity: 0.5;"></i>
+                      <p class="mt-2">No expense data available</p>
+                    </div>
+                  </div>
+                </div>
+                <div class="glass-card mt-3">
+                  <div class="chart-header">
+                    <i class="bi bi-exclamation-triangle"></i> Risk Alerts
+                  </div>
+                  <div class="chart-body">
+                    <div id="riskAlerts" class="risk-alerts-container">
+                      <!-- Risk alerts will be populated here -->
+                    </div>
+                    <div id="noRiskAlerts" class="chart-placeholder">
+                      <i class="bi bi-check-circle" style="font-size: 2rem; opacity: 0.5;"></i>
+                      <p class="mt-2">No spending risks detected</p>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -322,6 +380,10 @@
                   </div>
                   <div class="chart-body">
                     <canvas id="healthTrendChart" height="200"></canvas>
+                    <div id="healthTrendPlaceholder" class="chart-placeholder d-none">
+                      <i class="bi bi-heart-pulse" style="font-size: 3rem; opacity: 0.5;"></i>
+                      <p class="mt-2">Tracking your financial health over time...</p>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -331,7 +393,13 @@
                     <i class="bi bi-calendar-week"></i> Spending Heat Map
                   </div>
                   <div class="chart-body">
-                    <div id="heatMapContainer" class="heat-map-container"></div>
+                    <div id="heatMapContainer" class="heat-map-container">
+                      <!-- Heat map will be populated here -->
+                    </div>
+                    <div id="heatMapPlaceholder" class="chart-placeholder d-none">
+                      <i class="bi bi-grid-3x3-gap" style="font-size: 3rem; opacity: 0.5;"></i>
+                      <p class="mt-2">Heat map requires transaction data</p>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -342,6 +410,10 @@
                   </div>
                   <div class="chart-body">
                     <canvas id="categoryTrendChart" height="300"></canvas>
+                    <div id="categoryTrendPlaceholder" class="chart-placeholder d-none">
+                      <i class="bi bi-tag" style="font-size: 3rem; opacity: 0.5;"></i>
+                      <p class="mt-2">Analyzing category spending trends...</p>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -377,6 +449,10 @@
                   </div>
                   <div class="chart-body">
                     <canvas id="comparisonChart" height="300"></canvas>
+                    <div id="comparisonPlaceholder" class="chart-placeholder d-none">
+                      <i class="bi bi-bar-chart" style="font-size: 3rem; opacity: 0.5;"></i>
+                      <p class="mt-2">Select periods to compare</p>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -386,7 +462,13 @@
                     <i class="bi bi-percent"></i> Change Analysis
                   </div>
                   <div class="chart-body">
-                    <div id="changeAnalysis" class="change-analysis-container"></div>
+                    <div id="changeAnalysis" class="change-analysis-container">
+                      <!-- Change analysis will be populated here -->
+                    </div>
+                    <div id="noChangeAnalysis" class="chart-placeholder">
+                      <i class="bi bi-arrow-left-right" style="font-size: 3rem; opacity: 0.5;"></i>
+                      <p class="mt-2">Compare periods to see changes</p>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -755,6 +837,101 @@
     </div>
   </div>
 
+  <!-- Category Transactions Modal -->
+  <div class="modal fade category-transactions-modal" id="categoryTransactionsModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content glass-card">
+        <div class="modal-header">
+          <h5 class="modal-title" id="categoryTransactionsTitle">
+            <i class="bi bi-list-ul"></i> Category Transactions
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <span id="categoryTransactionsInfo" class="text-muted"></span>
+            <span id="categoryTotalAmount" class="fw-bold fs-5"></span>
+          </div>
+          <div class="category-transactions-list" id="categoryTransactionsList">
+            <!-- Transactions will be populated here -->
+          </div>
+          <div id="noCategoryTransactions" class="text-center text-muted p-3 d-none">
+            No transactions found for this category in the selected period.
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-primary" onclick="addTransactionForCategory()">
+            <i class="bi bi-plus-circle"></i> Add Transaction
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Month Details Modal -->
+  <div class="modal fade" id="monthDetailsModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content glass-card">
+        <div class="modal-header">
+          <h5 class="modal-title" id="monthDetailsModalLabel">
+            <i class="bi bi-calendar-month"></i> Month Details
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="month-details-summary">
+            <div class="row text-center">
+              <div class="col-4">
+                <div class="text-success">
+                  <div class="fw-bold fs-4" id="monthDetailsIncome">0</div>
+                  <small>Total Income</small>
+                </div>
+              </div>
+              <div class="col-4">
+                <div class="text-danger">
+                  <div class="fw-bold fs-4" id="monthDetailsExpenses">0</div>
+                  <small>Total Expenses</small>
+                </div>
+              </div>
+              <div class="col-4">
+                <div class="text-primary">
+                  <div class="fw-bold fs-4" id="monthDetailsBalance">0</div>
+                  <small>Ending Balance</small>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="row mt-4">
+            <div class="col-md-6">
+              <h6><i class="bi bi-currency-dollar text-success"></i> Income Breakdown</h6>
+              <div id="monthDetailsIncomeList" class="month-details-breakdown">
+                <!-- Income items will be populated here -->
+              </div>
+            </div>
+            <div class="col-md-6">
+              <h6><i class="bi bi-cart text-danger"></i> Expense Breakdown</h6>
+              <div id="monthDetailsExpensesList" class="month-details-breakdown">
+                <!-- Expense items will be populated here -->
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-3">
+            <h6><i class="bi bi-info-circle text-info"></i> Transaction Details</h6>
+            <div id="monthDetailsTransactions" class="month-details-breakdown">
+              <!-- Individual transaction calculations will be shown here -->
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- AI Insights Modal -->
   <div class="modal fade" id="aiInsightsModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered modal-lg">
@@ -776,7 +953,7 @@
     </div>
   </div>
 
-  <!-- Future Income/Expense Modals -->
+  <!-- Future Income Modal -->
   <div class="modal fade" id="futureIncomeModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content glass-card">
@@ -823,6 +1000,65 @@
             <div class="mb-3">
               <label for="futureIncomeEndDate" class="form-label">End Date (optional)</label>
               <input type="date" class="form-control form-glass" id="futureIncomeEndDate">
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="submit" class="btn btn-success">Save</button>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Future Expense Modal -->
+  <div class="modal fade" id="futureExpenseModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content glass-card">
+        <form id="futureExpenseForm" autocomplete="off">
+          <div class="modal-header">
+            <h5 class="modal-title">Add Future Expense</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+            <input type="hidden" id="futureExpenseIndex" value="-1">
+            <div class="mb-3">
+              <label for="futureExpenseDescription" class="form-label">Description</label>
+              <input type="text" class="form-control form-glass" id="futureExpenseDescription" required>
+            </div>
+            <div class="row g-2">
+              <div class="col-md-6">
+                <label for="futureExpenseType" class="form-label">Type</label>
+                <select class="form-select form-glass" id="futureExpenseType" required>
+                  <option value="grocery">Grocery</option>
+                  <option value="bike_fuel">Bike/Fuel</option>
+                  <option value="expenses">General Expenses</option>
+                  <option value="loan_returned">Loan Repayment</option>
+                  <option value="committee">Committee</option>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label for="futureExpenseAmount" class="form-label">Amount</label>
+                <input type="number" class="form-control form-glass" id="futureExpenseAmount" required step="0.01">
+              </div>
+            </div>
+            <div class="row g-2 mt-2">
+              <div class="col-md-6">
+                <label for="futureExpenseFrequency" class="form-label">Frequency</label>
+                <select class="form-select form-glass" id="futureExpenseFrequency" required>
+                  <option value="one-time">One-time</option>
+                  <option value="monthly">Monthly</option>
+                  <option value="quarterly">Quarterly</option>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label for="futureExpenseStartDate" class="form-label">Start Date</label>
+                <input type="date" class="form-control form-glass" id="futureExpenseStartDate" required>
+              </div>
+            </div>
+            <div class="mb-3">
+              <label for="futureExpenseEndDate" class="form-label">End Date (optional)</label>
+              <input type="date" class="form-control form-glass" id="futureExpenseEndDate">
             </div>
           </div>
           <div class="modal-footer">
@@ -886,6 +1122,28 @@
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
           </div>
         </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Confirmation Modal -->
+  <div class="modal fade confirmation-modal" id="confirmationModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content glass-card">
+        <div class="modal-header">
+          <h5 class="modal-title">Confirm Action</h5>
+        </div>
+        <div class="modal-body text-center">
+          <div class="confirmation-icon confirmation-danger">
+            <i class="bi bi-exclamation-triangle-fill"></i>
+          </div>
+          <h6 id="confirmationTitle">Are you sure?</h6>
+          <p id="confirmationMessage" class="text-muted">This action cannot be undone.</p>
+        </div>
+        <div class="modal-footer justify-content-center">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-danger" id="confirmActionBtn">Confirm</button>
+        </div>
       </div>
     </div>
   </div>
