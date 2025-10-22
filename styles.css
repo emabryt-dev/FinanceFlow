@@ -1293,3 +1293,122 @@ body.dark-mode {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* Enhanced Transactions Styles */
+.transactions-filters {
+  background-color: rgba(248, 249, 250, 0.8);
+  backdrop-filter: blur(10px);
+}
+
+.transactions-summary {
+  background-color: rgba(255, 255, 255, 0.9) !important;
+}
+
+.transactions-container {
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.transaction-card {
+  border-radius: 0.75rem;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  transition: all 0.2s ease;
+  background: white;
+}
+
+.transaction-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.transaction-card .card-body {
+  padding: 1rem;
+}
+
+.transaction-type-income {
+  border-left: 4px solid #198754;
+}
+
+.transaction-type-expense {
+  border-left: 4px solid #dc3545;
+}
+
+.transaction-amount-income {
+  color: #198754;
+  font-weight: 600;
+}
+
+.transaction-amount-expense {
+  color: #dc3545;
+  font-weight: 600;
+}
+
+.transaction-date {
+  font-size: 0.875rem;
+  color: #6c757d;
+}
+
+.transaction-category {
+  display: inline-block;
+  padding: 0.25rem 0.5rem;
+  border-radius: 1rem;
+  font-size: 0.75rem;
+  background-color: #e9ecef;
+  color: #495057;
+}
+
+.transaction-actions {
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.transaction-card:hover .transaction-actions,
+.table-hover tr:hover .transaction-actions {
+  opacity: 1;
+}
+
+.btn-action {
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.375rem;
+  border: none;
+  background: transparent;
+  transition: all 0.2s ease;
+}
+
+.btn-action:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.btn-edit:hover {
+  color: #0d6efd;
+}
+
+.btn-delete:hover {
+  color: #dc3545;
+}
+
+/* Table improvements */
+.table th {
+  border-top: none;
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: #6c757d;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.table td {
+  vertical-align: middle;
+  padding: 0.75rem 0.5rem;
+}
+
+/* Responsive improvements */
+@media (max-width: 768px) {
+  .transactions-filters .row > div {
+    margin-bottom: 0.5rem;
+  }
+  
+  .transaction-actions {
+    opacity: 1;
+  }
+}
