@@ -187,36 +187,180 @@
     </div>
 
     <!-- Transactions Tab -->
-    <div id="tab-transactions" class="tab-page d-none">
-      <div class="glass-card">
-        <div class="card-header">
-          <h6><i class="bi bi-list-ul"></i> Transactions</h6>
-          <div class="input-group" style="max-width: 300px;">
-            <input type="text" id="transactionSearch" class="form-control form-glass" placeholder="Search transactions...">
+<div id="tab-transactions" class="tab-page d-none">
+  <div class="card shadow-sm mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <div>
+        <i class="bi bi-list-ul"></i> Transactions
+        <span class="badge bg-primary ms-2" id="transactionsCount">0</span>
+      </div>
+      <div class="d-flex gap-2">
+        <button class="btn btn-primary btn-sm" onclick="document.getElementById('openAddTransactionModal').click()">
+          <i class="bi bi-plus-lg"></i> Add Transaction
+        </button>
+      </div>
+    </div>
+    <div class="card-body p-0">
+      
+      <!-- Enhanced Filters & Search -->
+      <div class="transactions-filters p-3 border-bottom">
+        <div class="row g-2 align-items-end">
+          <div class="col-md-2">
+            <label class="form-label small mb-1">Date Range</label>
+            <select id="transactionsDateRange" class="form-select form-select-sm">
+              <option value="all">All Time</option>
+              <option value="today">Today</option>
+              <option value="week">This Week</option>
+              <option value="month" selected>This Month</option>
+              <option value="last-month">Last Month</option>
+              <option value="year">This Year</option>
+              <option value="custom">Custom Range</option>
+            </select>
+          </div>
+          <div class="col-md-2 d-none" id="customDateRangeContainer">
+            <label class="form-label small mb-1">From</label>
+            <input type="date" id="transactionsDateFrom" class="form-control form-control-sm">
+          </div>
+          <div class="col-md-2 d-none" id="customDateRangeContainer2">
+            <label class="form-label small mb-1">To</label>
+            <input type="date" id="transactionsDateTo" class="form-control form-control-sm">
+          </div>
+          <div class="col-md-2">
+            <label class="form-label small mb-1">Type</label>
+            <select id="transactionsTypeFilter" class="form-select form-select-sm">
+              <option value="all">All Types</option>
+              <option value="income">Income</option>
+              <option value="expense">Expense</option>
+            </select>
+          </div>
+          <div class="col-md-2">
+            <label class="form-label small mb-1">Category</label>
+            <select id="transactionsCategoryFilter" class="form-select form-select-sm">
+              <option value="all">All Categories</option>
+            </select>
+          </div>
+          <div class="col-md-2">
+            <label class="form-label small mb-1">Amount Range</label>
+            <select id="transactionsAmountFilter" class="form-select form-select-sm">
+              <option value="all">Any Amount</option>
+              <option value="0-100">0 - 100</option>
+              <option value="100-500">100 - 500</option>
+              <option value="500-1000">500 - 1,000</option>
+              <option value="1000-5000">1,000 - 5,000</option>
+              <option value="5000+">5,000+</option>
+            </select>
+          </div>
+          <div class="col-md-2">
+            <label class="form-label small mb-1">Sort By</label>
+            <select id="transactionsSort" class="form-select form-select-sm">
+              <option value="date-desc">Date (Newest)</option>
+              <option value="date-asc">Date (Oldest)</option>
+              <option value="amount-desc">Amount (High to Low)</option>
+              <option value="amount-asc">Amount (Low to High)</option>
+              <option value="description">Description (A-Z)</option>
+            </select>
           </div>
         </div>
-        <div class="table-responsive">
-          <table class="table table-hover" id="transactionsTable">
-            <thead>
-              <tr>
-                <th>Date</th>
-                <th>Description</th>
-                <th>Type</th>
-                <th>Category</th>
-                <th>Amount</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody id="transactionsBody">
-              <!-- Transactions will populate here -->
-            </tbody>
-          </table>
+        
+        <div class="row mt-2">
+          <div class="col-md-8">
+            <div class="input-group input-group-sm">
+              <span class="input-group-text"><i class="bi bi-search"></i></span>
+              <input type="text" id="transactionsSearch" class="form-control" placeholder="Search transactions...">
+              <button class="btn btn-outline-secondary" type="button" id="clearSearch">
+                <i class="bi bi-x"></i>
+              </button>
+            </div>
+          </div>
+          <div class="col-md-4 d-flex justify-content-end">
+            <div class="btn-group btn-group-sm" role="group">
+              <button type="button" class="btn btn-outline-primary active" id="viewList">
+                <i class="bi bi-list"></i>
+              </button>
+              <button type="button" class="btn btn-outline-primary" id="viewCards">
+                <i class="bi bi-grid"></i>
+              </button>
+            </div>
+          </div>
         </div>
-        <div id="noTransactions" class="text-center p-3 d-none">
-          No transactions found.
+      </div>
+      
+      <!-- Summary Stats -->
+      <div class="transactions-summary p-3 bg-light border-bottom d-none" id="transactionsSummary">
+        <div class="row text-center">
+          <div class="col-4">
+            <div class="text-success">
+              <div class="fw-bold" id="summaryIncome">0</div>
+              <small>Total Income</small>
+            </div>
+          </div>
+          <div class="col-4">
+            <div class="text-danger">
+              <div class="fw-bold" id="summaryExpense">0</div>
+              <small>Total Expenses</small>
+            </div>
+          </div>
+          <div class="col-4">
+            <div class="text-primary">
+              <div class="fw-bold" id="summaryCount">0</div>
+              <small>Transactions</small>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Transactions List View -->
+      <div class="transactions-container" id="transactionsListView">
+        <div class="table-container">
+          <div class="table-responsive-container">
+            <table class="table table-hover mb-0" id="transactionsTable">
+              <thead class="table-light">
+                <tr>
+                  <th class="ps-3">Date</th>
+                  <th>Description</th>
+                  <th>Type</th>
+                  <th>Category</th>
+                  <th>Amount</th>
+                  <th class="text-end pe-3">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="transactionsBody"></tbody>
+            </table>
+          </div>
+          <div id="noTransactions" class="text-center text-muted p-5">
+            <i class="bi bi-receipt display-4 opacity-25"></i>
+            <p class="mt-3">No transactions found</p>
+            <button class="btn btn-primary mt-2" onclick="document.getElementById('openAddTransactionModal').click()">
+              <i class="bi bi-plus-lg"></i> Add Your First Transaction
+            </button>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Transactions Card View -->
+      <div class="transactions-container d-none" id="transactionsCardView">
+        <div class="container-fluid p-3">
+          <div class="row g-3" id="transactionsCards"></div>
+        </div>
+      </div>
+      
+      <!-- Pagination -->
+      <div class="transactions-pagination p-3 border-top d-none" id="transactionsPagination">
+        <div class="d-flex justify-content-between align-items-center">
+          <div class="text-muted small" id="paginationInfo">Showing 0 of 0 transactions</div>
+          <div class="btn-group btn-group-sm">
+            <button type="button" class="btn btn-outline-primary" id="prevPage" disabled>
+              <i class="bi bi-chevron-left"></i> Previous
+            </button>
+            <button type="button" class="btn btn-outline-primary" id="nextPage" disabled>
+              Next <i class="bi bi-chevron-right"></i>
+            </button>
+          </div>
         </div>
       </div>
     </div>
+  </div>
+</div>
 
     <!-- Analytics Tab -->
     <div id="tab-analytics" class="tab-page d-none">
