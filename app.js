@@ -7,6 +7,18 @@ import { DateTime } from 'https://cdn.jsdelivr.net/npm/luxon@3.4.4/build/global/
 import JSConfetti from 'https://cdn.jsdelivr.net/npm/js-confetti@0.12.0/dist/js-confetti.browser.js';
 import ListView from 'https://cdn.jsdelivr.net/npm/list-view@0.0.3/dist/list-view.min.js';
 
+// UUID Fallback for older browsers
+const generateUUID = () => {
+  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+    return crypto.randomUUID();
+  }
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+    const r = Math.random() * 16 | 0;
+    const v = c === 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
+};
+
 // Initialize IndexedDB
 const db = new Dexie('FinanceFlowDB');
 db.version(1).stores({
@@ -423,7 +435,7 @@ async function updateUI() {
   }
   if (streakCount >= 5) {
     confetti.addConfetti({ emojis: ['🔥', '🏆'] });
-    showToast(`5-day streak! You're killing it!`, 'success');
+    showToast(`5-day streak! You're Kays!`, 'success');
   }
 }
 
@@ -755,7 +767,7 @@ function addTransactionForCategory() {
 // Event Listeners
 document.getElementById('transactionForm').addEventListener('submit', async e => {
   e.preventDefault();
-  const id = document.getElementById('editTransactionIndex').value || crypto.randomUUID();
+  const id = document.getElementById('editTransactionIndex').value || generateUUID();
   const transaction = {
     id,
     type: document.getElementById('typeInput').value,
@@ -775,7 +787,7 @@ document.getElementById('futureIncomeForm').addEventListener('submit', async e =
   e.preventDefault();
   const index = document.getElementById('futureIncomeIndex').value;
   const ft = {
-    id: index === '-1' ? crypto.randomUUID() : index,
+    id: index === '-1' ? generateUUID() : index,
     type: 'income',
     description: document.getElementById('futureIncomeDescription').value,
     amount: parseFloat(document.getElementById('futureIncomeAmount').value),
@@ -794,7 +806,7 @@ document.getElementById('futureExpenseForm').addEventListener('submit', async e 
   e.preventDefault();
   const index = document.getElementById('futureExpenseIndex').value;
   const ft = {
-    id: index === '-1' ? crypto.randomUUID() : index,
+    id: index === '-1' ? generateUUID() : index,
     type: 'expense',
     description: document.getElementById('futureExpenseDescription').value,
     amount: parseFloat(document.getElementById('futureExpenseAmount').value),
@@ -814,7 +826,7 @@ document.getElementById('loanForm').addEventListener('submit', async e => {
   const index = document.getElementById('loanIndex').value;
   const type = document.getElementById('loanType').value;
   const loan = {
-    id: index === '-1' ? crypto.randomUUID() : index,
+    id: index === '-1' ? generateUUID() : index,
     type,
     description: document.getElementById('loanDescription').value,
     amount: parseFloat(document.getElementById('loanAmount').value),
