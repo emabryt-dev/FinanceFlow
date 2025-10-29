@@ -2,73 +2,601 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Finance Flow</title>
-  <link rel="stylesheet" href="style.css">
-  <link rel="manifest" href="manifest.json">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="google-signin-client_id" content="YOUR_GOOGLE_CLIENT_ID">
+  <meta name="description" content="Finance Flow: Track income, expenses, budgets, and debts with AI-powered insights.">
   <meta name="theme-color" content="#00ff00">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/png" href="icons/icon-192.png">
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/js-confetti@0.12.0/dist/js-confetti.browser.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/dexie@3.2.4/dist/dexie.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/crypto-js@4.1.1/crypto-js.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.21.0/dist/tf.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/luxon@3.4.4/build/global/luxon.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/list-view@0.0.3/dist/list-view.min.js"></script>
 </head>
-<body class="bg-gradient-to-br from-gray-900 to-black text-white dark">
-  <div class="container mx-auto p-4">
-    <div class="flex justify-between items-center mb-4">
-      <h1 class="text-3xl font-bold">Finance Flow</h1>
-      <button id="theme-toggle" class="bg-neon-green p-2 rounded">🌙</button>
+<body>
+  <nav class="navbar" aria-label="Main navigation">
+    <div class="container-fluid d-flex justify-content-between align-items-center">
+      <a class="navbar-brand" href="#">Finance Flow</a>
+      <div class="d-flex align-items-center gap-2">
+        <div class="dropdown">
+          <button class="btn p-0 border-0" type="button" id="profileDropdown" data-bs-toggle="dropdown" aria-expanded="false" aria-label="User profile">
+            <div id="profilePicture" class="profile-pic-container">
+              <i class="bi bi-person-circle profile-icon" aria-hidden="true"></i>
+            </div>
+          </button>
+          <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
+            <li id="signedInUser" class="dropdown-item-text d-none">
+              <small class="text-muted">Signed in as:</small>
+              <div id="userEmail" class="fw-bold"></div>
+            </li>
+            <li><hr class="dropdown-divider"></li>
+            <li id="signInOption">
+              <a class="dropdown-item" href="#" onclick="showGoogleSignIn()">
+                <i class="bi bi-google me-2"></i>Sign in with Google
+              </a>
+            </li>
+            <li id="signOutOption" class="d-none">
+              <a class="dropdown-item" href="#" onclick="googleSignOut()">
+                <i class="bi bi-box-arrow-right me-2"></i>Sign out
+              </a>
+            </li>
+            <li><hr class="dropdown-divider"></li>
+            <li>
+              <a class="dropdown-item" href="#" onclick="manualSync()">
+                <i class="bi bi-cloud-arrow-up me-2"></i>Sync Now
+              </a>
+            </li>
+          </ul>
+        </div>
+      </div>
     </div>
-    <button id="add-btn" class="bg-neon-green p-2 rounded mb-4">Add Transaction</button>
-    <div class="mb-4">
-      <h2 class="text-xl">Filters</h2>
-      <select id="filter-category" class="p-2 bg-gray-700 rounded">
-        <option value="">All Categories</option>
-        <option value="Food">Food</option>
-        <option value="Transport">Transport</option>
-        <option value="Entertainment">Entertainment</option>
-        <option value="Bills">Bills</option>
-        <option value="Other">Other</option>
-      </select>
-      <input type="date" id="filter-start" class="p-2 bg-gray-700 rounded">
-      <input type="date" id="filter-end" class="p-2 bg-gray-700 rounded">
-      <input type="text" id="filter-keyword" placeholder="Search notes..." class="p-2 bg-gray-700 rounded">
-      <button id="export-btn" class="bg-blue-500 p-2 rounded">Export CSV</button>
+  </nav>
+
+  <div class="toast-container" id="toastContainer" aria-live="polite"></div>
+
+  <div class="modal fade" id="googleSignInModal" tabindex="-1" aria-labelledby="googleSignInModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="googleSignInModalLabel">Sign In</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body text-center">
+          <p>Sign in to sync your data across devices</p>
+          <div id="googleSignInButton" class="d-inline-block"></div>
+        </div>
+      </div>
     </div>
-    <div class="mb-4">
-      <h2 class="text-xl">Budgets</h2>
-      <form id="budget-form" class="flex gap-2">
-        <select id="budget-category" class="p-2 bg-gray-700 rounded">
-          <option value="Food">Food</option>
-          <option value="Transport">Transport</option>
-          <option value="Entertainment">Entertainment</option>
-          <option value="Bills">Bills</option>
-          <option value="Other">Other</option>
-        </select>
-        <input type="number" id="budget-amount" placeholder="Budget" class="p-2 bg-gray-700 rounded" step="0.01">
-        <button type="submit" class="bg-neon-green p-2 rounded">Set Budget</button>
-      </form>
-    </div>
-    <div id="dashboard" class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4"></div>
-    <div id="analytics" class="mt-4"></div>
-    <div id="transactions" class="mt-4"></div>
-    <div id="modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-      <div class="bg-gray-800 p-6 rounded-lg animate-slide-in">
-        <h2 class="text-xl mb-4">Add/Edit Transaction</h2>
-        <form id="transaction-form">
-          <input type="hidden" id="edit-id">
-          <input type="number" id="amount" placeholder="Amount" class="p-2 mb-2 w-full bg-gray-700 rounded" required step="0.01">
-          <select id="category" class="p-2 mb-2 w-full bg-gray-700 rounded" required>
-            <option value="Food">Food</option>
-            <option value="Transport">Transport</option>
-            <option value="Entertainment">Entertainment</option>
-            <option value="Bills">Bills</option>
-            <option value="Other">Other</option>
-          </select>
-          <input type="date" id="date" class="p-2 mb-2 w-full bg-gray-700 rounded" required>
-          <input type="text" id="note" placeholder="Note" class="p-2 mb-2 w-full bg-gray-700 rounded">
-          <button type="submit" class="bg-neon-green p-2 rounded">Save</button>
-          <button type="button" id="cancel-btn" class="bg-red-500 p-2 rounded ml-2">Cancel</button>
+  </div>
+
+  <div class="modal fade" id="addTransactionModal" tabindex="-1" aria-labelledby="addTransactionModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <form id="transactionForm" autocomplete="off">
+          <div class="modal-header">
+            <h5 class="modal-title" id="addTransactionModalLabel"><i class="bi bi-plus-circle"></i> Add Transaction</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <input type="hidden" id="editTransactionIndex" value="-1">
+            <div class="row g-3 mb-3">
+              <div class="col-md-6">
+                <label for="dateInput" class="form-label">Date</label>
+                <input type="date" class="form-control" id="dateInput" required aria-describedby="dateHelp">
+                <div id="dateHelp" class="form-text">Select transaction date</div>
+              </div>
+              <div class="col-md-6">
+                <label for="amountInput" class="form-label">Amount</label>
+                <input type="number" class="form-control" id="amountInput" required step="0.01" aria-describedby="amountHelp">
+                <div id="amountHelp" class="form-text">Enter amount in selected currency</div>
+              </div>
+            </div>
+            <div class="mb-3">
+              <label for="descInput" class="form-label">Description</label>
+              <input type="text" class="form-control" id="descInput" required aria-describedby="descHelp">
+              <div id="descHelp" class="form-text">Describe the transaction</div>
+              <div id="categorySuggestion" class="mt-2"></div>
+            </div>
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label for="typeInput" class="form-label">Type</label>
+                <select class="form-select" id="typeInput" required aria-describedby="typeHelp">
+                  <option value="expense">Expense</option>
+                  <option value="income">Income</option>
+                </select>
+                <div id="typeHelp" class="form-text">Select income or expense</div>
+              </div>
+              <div class="col-md-6">
+                <label for="categoryInput" class="form-label">Category</label>
+                <select class="form-select" id="categoryInput" required aria-describedby="categoryHelp">
+                  <!-- Populated by JS -->
+                </select>
+                <div id="categoryHelp" class="form-text">Choose a category</div>
+              </div>
+            </div>
+            <div id="formAlert" class="alert alert-danger mt-3 d-none" role="alert"></div>
+          </div>
+          <div class="modal-footer">
+            <button type="submit" class="btn btn-success"><i class="bi bi-check-circle"></i> <span id="submitButtonText">Add</span></button>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          </div>
         </form>
       </div>
     </div>
   </div>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="main.js"></script>
+
+  <div class="modal fade" id="categoryTransactionsModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="categoryTransactionsTitle"><i class="bi bi-list-ul"></i> Category Transactions</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <span id="categoryTransactionsInfo" class="text-muted"></span>
+            <span id="categoryTotalAmount" class="fw-bold fs-5"></span>
+          </div>
+          <div class="category-transactions-list" id="categoryTransactionsList"></div>
+          <div id="noCategoryTransactions" class="text-center text-muted p-3 d-none">
+            No transactions found for this category in the selected period.
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-primary" onclick="addTransactionForCategory()">Add Transaction</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="aiInsightsModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title"><i class="bi bi-robot"></i> AI-Powered Insights</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div id="aiInsightsContent"></div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="futureIncomeModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <form id="futureIncomeForm" autocomplete="off">
+          <div class="modal-header">
+            <h5 class="modal-title" id="futureIncomeModalLabel">Add Future Income</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <input type="hidden" id="futureIncomeIndex" value="-1">
+            <div class="mb-3">
+              <label for="futureIncomeDescription" class="form-label">Description</label>
+              <input type="text" class="form-control" id="futureIncomeDescription" required>
+            </div>
+            <div class="row g-2">
+              <div class="col-md-6">
+                <label for="futureIncomeType" class="form-label">Type</label>
+                <select class="form-select" id="futureIncomeType" required>
+                  <option value="paycheck">Paycheck</option>
+                  <option value="loan">Loan</option>
+                  <option value="sale">Asset Sale</option>
+                  <option value="committee">Committee Payout</option>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label for="futureIncomeAmount" class="form-label">Amount</label>
+                <input type="number" class="form-control" id="futureIncomeAmount" required step="0.01">
+              </div>
+            </div>
+            <div class="row g-2 mt-2">
+              <div class="col-md-6">
+                <label for="futureIncomeFrequency" class="form-label">Frequency</label>
+                <select class="form-select" id="futureIncomeFrequency" required>
+                  <option value="one-time">One-time</option>
+                  <option value="monthly">Monthly</option>
+                  <option value="quarterly">Quarterly</option>
+                  <option value="yearly">Yearly</option>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label for="futureIncomeStartDate" class="form-label">Start Date</label>
+                <input type="date" class="form-control" id="futureIncomeStartDate" required>
+              </div>
+            </div>
+            <div class="mb-3">
+              <label for="futureIncomeEndDate" class="form-label">End Date (optional)</label>
+              <input type="date" class="form-control" id="futureIncomeEndDate">
+              <div class="form-text">Leave empty for ongoing income</div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="submit" class="btn btn-success">Save</button>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="futureExpenseModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <form id="futureExpenseForm" autocomplete="off">
+          <div class="modal-header">
+            <h5 class="modal-title" id="futureExpenseModalLabel">Add Future Expense</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <input type="hidden" id="futureExpenseIndex" value="-1">
+            <div class="mb-3">
+              <label for="futureExpenseDescription" class="form-label">Description</label>
+              <input type="text" class="form-control" id="futureExpenseDescription" required>
+            </div>
+            <div class="row g-2">
+              <div class="col-md-6">
+                <label for="futureExpenseType" class="form-label">Type</label>
+                <select class="form-select" id="futureExpenseType" required>
+                  <option value="grocery">Grocery</option>
+                  <option value="bike_fuel">Bike/Fuel</option>
+                  <option value="expenses">General Expenses</option>
+                  <option value="loan_returned">Loan Repayment</option>
+                  <option value="committee">Committee</option>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label for="futureExpenseAmount" class="form-label">Amount</label>
+                <input type="number" class="form-control" id="futureExpenseAmount" required step="0.01">
+              </div>
+            </div>
+            <div class="row g-2 mt-2">
+              <div class="col-md-6">
+                <label for="futureExpenseFrequency" class="form-label">Frequency</label>
+                <select class="form-select" id="futureExpenseFrequency" required>
+                  <option value="one-time">One-time</option>
+                  <option value="monthly">Monthly</option>
+                  <option value="quarterly">Quarterly</option>
+                  <option value="yearly">Yearly</option>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label for="futureExpenseStartDate" class="form-label">Start Date</label>
+                <input type="date" class="form-control" id="futureExpenseStartDate" required>
+              </div>
+            </div>
+            <div class="mb-3">
+              <label for="futureExpenseEndDate" class="form-label">End Date (optional)</label>
+              <input type="date" class="form-control" id="futureExpenseEndDate">
+              <div class="form-text">Leave empty for ongoing expense</div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="submit" class="btn btn-success">Save</button>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="loanModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <form id="loanForm" autocomplete="off">
+          <div class="modal-header">
+            <h5 class="modal-title" id="loanModalLabel">Add Loan</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <input type="hidden" id="loanIndex" value="-1">
+            <div class="mb-3">
+              <label for="loanDescription" class="form-label">Description</label>
+              <input type="text" class="form-control" id="loanDescription" required>
+            </div>
+            <div class="row g-2">
+              <div class="col-md-6">
+                <label for="loanType" class="form-label">Type</label>
+                <select class="form-select" id="loanType" required>
+                  <option value="given">Given</option>
+                  <option value="taken">Taken</option>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label for="loanAmount" class="form-label">Amount</label>
+                <input type="number" class="form-control" id="loanAmount" required step="0.01">
+              </div>
+            </div>
+            <div class="row g-2 mt-2">
+              <div class="col-md-6">
+                <label for="loanInterestRate" class="form-label">Interest Rate (%)</label>
+                <input type="number" class="form-control" id="loanInterestRate" step="0.01" value="0">
+              </div>
+              <div class="col-md-6">
+                <label for="loanTermMonths" class="form-label">Term (Months)</label>
+                <input type="number" class="form-control" id="loanTermMonths" required>
+              </div>
+            </div>
+            <div class="mb-3 mt-2">
+              <label for="loanStartDate" class="form-label">Start Date</label>
+              <input type="date" class="form-control" id="loanStartDate" required>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="submit" class="btn btn-success">Save</button>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="confirmationModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Confirm Action</h5>
+        </div>
+        <div class="modal-body text-center">
+          <div class="confirmation-icon confirmation-danger">
+            <i class="bi bi-exclamation-triangle-fill"></i>
+          </div>
+          <h6 id="confirmationTitle">Are you sure?</h6>
+          <p id="confirmationMessage" class="text-muted">This action cannot be undone.</p>
+        </div>
+        <div class="modal-footer justify-content-center">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-danger" id="confirmActionBtn">Confirm</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="main-content">
+    <div id="tab-dashboard" class="tab-page">
+      <div class="card shadow-sm mb-4">
+        <div class="card-header"><i class="bi bi-house-door"></i> Financial Overview</div>
+        <div class="card-body">
+          <div class="row g-3">
+            <div class="col-md-4">
+              <div class="card shadow-sm">
+                <div class="card-body text-center">
+                  <h5 class="card-title">Net Wealth</h5>
+                  <p id="netWealth" class="fw-bold text-primary fs-3">0</p>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="card shadow-sm">
+                <div class="card-body text-center">
+                  <h5 class="card-title">Total Income</h5>
+                  <p id="totalIncome" class="fw-bold text-success fs-3">0</p>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="card shadow-sm">
+                <div class="card-body text-center">
+                  <h5 class="card-title">Total Expenses</h5>
+                  <p id="totalExpense" class="fw-bold text-danger fs-3">0</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="mt-4">
+            <canvas id="overviewChart" height="300"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="tab-transactions" class="tab-page d-none">
+      <div class="card shadow-sm mb-4">
+        <div class="card-header"><i class="bi bi-list-ul"></i> Transactions</div>
+        <div class="card-body">
+          <div class="mb-3">
+            <select id="filterCategory" class="form-select" aria-label="Filter by category">
+              <option value="all">All Categories</option>
+            </select>
+          </div>
+          <div class="table-container">
+            <table id="transactionsTable" class="table table-hover">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Description</th>
+                  <th>Category</th>
+                  <th>Amount</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="transactionsList"></tbody>
+            </table>
+          </div>
+          <button class="btn btn-primary mt-3" onclick="showAddTransactionModal()">Add Transaction</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="tab-planner" class="tab-page d-none">
+      <div class="card shadow-sm mb-4">
+        <div class="card-header"><i class="bi bi-calendar-check"></i> Financial Planner</div>
+        <div class="card-body">
+          <div class="mb-3">
+            <select id="plannerTimeframe" class="form-select">
+              <option value="1year">1 Year</option>
+              <option value="3year">3 Years</option>
+              <option value="5year">5 Years</option>
+            </select>
+          </div>
+          <div class="d-flex gap-2 mb-3">
+            <button class="btn btn-primary" onclick="showFutureIncomeModal()">Add Income</button>
+            <button class="btn btn-primary" onclick="showFutureExpenseModal()">Add Expense</button>
+          </div>
+          <div id="plannerProjections"></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="tab-debt" class="tab-page d-none">
+      <div class="card shadow-sm mb-4">
+        <div class="card-header"><i class="bi bi-cash-coin"></i> Debt Management</div>
+        <div class="card-body">
+          <div class="mb-3">
+            <button class="btn btn-primary" onclick="showLoanModal()">Add Loan</button>
+          </div>
+          <div id="debtManagement"></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="tab-analytics" class="tab-page d-none">
+      <div class="card shadow-sm mb-4">
+        <div class="card-header"><i class="bi bi-bar-chart"></i> Analytics</div>
+        <div class="card-body">
+          <div class="mb-3">
+            <select id="overviewChartType" class="form-select">
+              <option value="category">Category Breakdown</option>
+              <option value="trend">Spending Trend</option>
+            </select>
+          </div>
+          <div class="row g-3">
+            <div class="col-12 col-lg-6">
+              <div class="chart-card">
+                <div class="chart-header"><i class="bi bi-bar-chart"></i> Overview</div>
+                <div class="chart-body">
+                  <canvas id="analyticsChart" height="300"></canvas>
+                </div>
+              </div>
+            </div>
+            <div class="col-12 col-lg-6">
+              <div class="chart-card">
+                <div class="chart-header"><i class="bi bi-robot"></i> AI Insights</div>
+                <div class="chart-body">
+                  <button class="btn btn-primary mb-3" onclick="showAIInsights()">View Insights</button>
+                  <div id="quickInsights"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="tab-settings" class="tab-page d-none">
+      <div class="card shadow-sm mb-4">
+        <div class="card-header"><i class="bi bi-gear"></i> Settings</div>
+        <div class="card-body">
+          <div class="mb-3">
+            <div class="form-check form-switch">
+              <input class="form-check-input" type="checkbox" id="darkModeToggle" aria-label="Toggle dark mode">
+              <label class="form-check-label" for="darkModeToggle">Dark Mode</label>
+            </div>
+          </div>
+          <hr>
+          <div class="mb-3">
+            <label class="form-label">Cloud Sync</label>
+            <div class="d-flex gap-2 mb-2">
+              <button id="manualSyncSettings" class="btn btn-outline-primary btn-sm">
+                <i class="bi bi-cloud-arrow-up"></i> Sync Now
+              </button>
+              <small class="text-muted ms-2" id="syncStatusText">Sign in to sync across devices</small>
+            </div>
+          </div>
+          <hr>
+          <div class="mb-3">
+            <label class="form-label">Monthly Rollover Settings</label>
+            <div class="form-check form-switch mb-2">
+              <input class="form-check-input" type="checkbox" id="autoRolloverToggle" checked aria-label="Toggle auto-rollover">
+              <label class="form-check-label" for="autoRolloverToggle">Auto-rollover balances</label>
+            </div>
+            <div class="form-check form-switch mb-2">
+              <input class="form-check-input" type="checkbox" id="allowNegativeRollover" aria-label="Allow negative rollovers">
+              <label class="form-check-label" for="allowNegativeRollover">Allow negative rollovers</label>
+            </div>
+          </div>
+          <hr>
+          <div class="mb-3">
+            <label for="currencySelect" class="form-label">Currency</label>
+            <select id="currencySelect" class="form-select" aria-label="Select currency">
+              <option value="USD">USD - US Dollar</option>
+              <option value="EUR">EUR - Euro</option>
+              <option value="PKR">PKR - Pakistani Rupee</option>
+            </select>
+          </div>
+          <div>
+            <button id="toggleCategorySettings" class="btn btn-outline-secondary w-100 mb-2" type="button">
+              <span id="catCollapseIcon"><i class="bi bi-chevron-right"></i></span> Category Settings
+            </button>
+            <div id="categorySettingsPanel" class="collapse">
+              <div class="input-group mb-2">
+                <input type="text" id="newCategoryInput" class="form-control" placeholder="New category" aria-label="New category">
+                <select id="newCategoryType" class="form-select" style="max-width: 120px;" aria-label="Category type">
+                  <option value="income">Income</option>
+                  <option value="expense">Expense</option>
+                </select>
+                <button id="addCategoryBtn" class="btn btn-primary" type="button"><i class="bi bi-plus"></i> Add</button>
+              </div>
+              <ul id="categoryList" class="list-group"></ul>
+            </div>
+          </div>
+          <hr>
+          <div>
+            <label class="form-label">Import / Export Transactions</label>
+            <div class="mb-2">
+              <button id="exportBtn" class="btn btn-outline-success btn-sm"><i class="bi bi-download"></i> Export</button>
+              <input type="file" id="importFile" accept=".json" style="display:none;">
+              <button id="importBtn" class="btn btn-outline-primary btn-sm"><i class="bi bi-upload"></i> Import</button>
+            </div>
+            <div id="importExportAlert" class="alert alert-info d-none"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <nav class="navbar navbar-light p-0 fixed-bottom" id="fixedNavBar" aria-label="Bottom navigation">
+    <div class="container-fluid p-0">
+      <div class="d-flex justify-content-around w-100">
+        <button class="nav-btn active" data-tab="dashboard" aria-label="Dashboard Tab" role="tab">
+          <i class="bi bi-house-door" aria-hidden="true"></i>
+          <small>Dashboard</small>
+        </button>
+        <button class="nav-btn" data-tab="transactions" aria-label="Transactions Tab" role="tab">
+          <i class="bi bi-list-ul" aria-hidden="true"></i>
+          <small>Transactions</small>
+        </button>
+        <button class="nav-btn" data-tab="planner" aria-label="Planner Tab" role="tab">
+          <i class="bi bi-calendar-check" aria-hidden="true"></i>
+          <small>Planner</small>
+        </button>
+        <button class="nav-btn" data-tab="debt" aria-label="Debt Tab" role="tab">
+          <i class="bi bi-cash-coin" aria-hidden="true"></i>
+          <small>Debt</small>
+        </button>
+        <button class="nav-btn" data-tab="analytics" aria-label="Analytics Tab" role="tab">
+          <i class="bi bi-bar-chart" aria-hidden="true"></i>
+          <small>Analytics</small>
+        </button>
+        <button class="nav-btn" data-tab="settings" aria-label="Settings Tab" role="tab">
+          <i class="bi bi-gear" aria-hidden="true"></i>
+          <small>Settings</small>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <script src="app.js"></script>
 </body>
 </html>
