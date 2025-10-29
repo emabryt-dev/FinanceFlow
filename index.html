@@ -8,15 +8,47 @@
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#00ff00">
 </head>
-<body class="bg-gradient-to-br from-gray-900 to-black text-white">
+<body class="bg-gradient-to-br from-gray-900 to-black text-white dark">
   <div class="container mx-auto p-4">
-    <h1 class="text-3xl font-bold mb-4">Finance Flow</h1>
+    <div class="flex justify-between items-center mb-4">
+      <h1 class="text-3xl font-bold">Finance Flow</h1>
+      <button id="theme-toggle" class="bg-neon-green p-2 rounded">🌙</button>
+    </div>
     <button id="add-btn" class="bg-neon-green p-2 rounded mb-4">Add Transaction</button>
-    <div id="dashboard" class="grid grid-cols-1 md:grid-cols-3 gap-4"></div>
+    <div class="mb-4">
+      <h2 class="text-xl">Filters</h2>
+      <select id="filter-category" class="p-2 bg-gray-700 rounded">
+        <option value="">All Categories</option>
+        <option value="Food">Food</option>
+        <option value="Transport">Transport</option>
+        <option value="Entertainment">Entertainment</option>
+        <option value="Bills">Bills</option>
+        <option value="Other">Other</option>
+      </select>
+      <input type="date" id="filter-start" class="p-2 bg-gray-700 rounded">
+      <input type="date" id="filter-end" class="p-2 bg-gray-700 rounded">
+      <input type="text" id="filter-keyword" placeholder="Search notes..." class="p-2 bg-gray-700 rounded">
+      <button id="export-btn" class="bg-blue-500 p-2 rounded">Export CSV</button>
+    </div>
+    <div class="mb-4">
+      <h2 class="text-xl">Budgets</h2>
+      <form id="budget-form" class="flex gap-2">
+        <select id="budget-category" class="p-2 bg-gray-700 rounded">
+          <option value="Food">Food</option>
+          <option value="Transport">Transport</option>
+          <option value="Entertainment">Entertainment</option>
+          <option value="Bills">Bills</option>
+          <option value="Other">Other</option>
+        </select>
+        <input type="number" id="budget-amount" placeholder="Budget" class="p-2 bg-gray-700 rounded" step="0.01">
+        <button type="submit" class="bg-neon-green p-2 rounded">Set Budget</button>
+      </form>
+    </div>
+    <div id="dashboard" class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4"></div>
     <div id="analytics" class="mt-4"></div>
     <div id="transactions" class="mt-4"></div>
     <div id="modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-      <div class="bg-gray-800 p-6 rounded-lg">
+      <div class="bg-gray-800 p-6 rounded-lg animate-slide-in">
         <h2 class="text-xl mb-4">Add/Edit Transaction</h2>
         <form id="transaction-form">
           <input type="hidden" id="edit-id">
