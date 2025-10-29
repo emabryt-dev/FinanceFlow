@@ -16,7 +16,9 @@
   <script src="https://cdn.jsdelivr.net/npm/crypto-js@4.1.1/crypto-js.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.21.0/dist/tf.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/luxon@3.4.4/build/global/luxon.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/list-view@0.0.3/dist/list-view.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.min.js"></script>
+  <script type="module" src="app.js"></script>
 </head>
 <body>
   <nav class="navbar" aria-label="Main navigation">
@@ -364,6 +366,15 @@
   </div>
 
   <div class="main-content">
+    <div class="tabs-container">
+      <button class="nav-btn active" data-tab="dashboard" aria-label="Dashboard"><i class="bi bi-house-door"></i> Dashboard</button>
+      <button class="nav-btn" data-tab="transactions" aria-label="Transactions"><i class="bi bi-list-ul"></i> Transactions</button>
+      <button class="nav-btn" data-tab="analytics" aria-label="Analytics"><i class="bi bi-bar-chart"></i> Analytics</button>
+      <button class="nav-btn" data-tab="planner" aria-label="Planner"><i class="bi bi-calendar"></i> Planner</button>
+      <button class="nav-btn" data-tab="debt" aria-label="Debt Management"><i class="bi bi-bank"></i> Debt</button>
+      <button class="nav-btn" data-tab="settings" aria-label="Settings"><i class="bi bi-gear"></i> Settings</button>
+    </div>
+
     <div id="tab-dashboard" class="tab-page">
       <div class="card shadow-sm mb-4">
         <div class="card-header"><i class="bi bi-house-door"></i> Financial Overview</div>
@@ -399,16 +410,23 @@
           </div>
         </div>
       </div>
+      <div class="card shadow-sm">
+        <div class="card-header"><i class="bi bi-lightbulb"></i> Quick Insights</div>
+        <div class="card-body" id="quickInsights"></div>
+      </div>
     </div>
 
     <div id="tab-transactions" class="tab-page d-none">
       <div class="card shadow-sm mb-4">
         <div class="card-header"><i class="bi bi-list-ul"></i> Transactions</div>
         <div class="card-body">
-          <div class="mb-3">
-            <select id="filterCategory" class="form-select" aria-label="Filter by category">
+          <div class="mb-3 d-flex justify-content-between align-items-center">
+            <select id="filterCategory" class="form-select w-auto" aria-label="Filter by category">
               <option value="all">All Categories</option>
             </select>
+            <button class="btn btn-success" onclick="showAddTransactionModal()" aria-label="Add new transaction">
+              <i class="bi bi-plus-circle"></i> Add Transaction
+            </button>
           </div>
           <div class="table-container">
             <table id="transactionsTable" class="table table-hover">
@@ -423,40 +441,12 @@
               </thead>
               <tbody id="transactionsList"></tbody>
             </table>
+            <div class="d-flex justify-content-between align-items-center mt-3">
+              <button id="prevPage" class="btn btn-outline-primary" disabled>Previous</button>
+              <span id="pageInfo">Page 1 of 1</span>
+              <button id="nextPage" class="btn btn-outline-primary" disabled>Next</button>
+            </div>
           </div>
-          <button class="btn btn-primary mt-3" onclick="showAddTransactionModal()">Add Transaction</button>
-        </div>
-      </div>
-    </div>
-
-    <div id="tab-planner" class="tab-page d-none">
-      <div class="card shadow-sm mb-4">
-        <div class="card-header"><i class="bi bi-calendar-check"></i> Financial Planner</div>
-        <div class="card-body">
-          <div class="mb-3">
-            <select id="plannerTimeframe" class="form-select">
-              <option value="1year">1 Year</option>
-              <option value="3year">3 Years</option>
-              <option value="5year">5 Years</option>
-            </select>
-          </div>
-          <div class="d-flex gap-2 mb-3">
-            <button class="btn btn-primary" onclick="showFutureIncomeModal()">Add Income</button>
-            <button class="btn btn-primary" onclick="showFutureExpenseModal()">Add Expense</button>
-          </div>
-          <div id="plannerProjections"></div>
-        </div>
-      </div>
-    </div>
-
-    <div id="tab-debt" class="tab-page d-none">
-      <div class="card shadow-sm mb-4">
-        <div class="card-header"><i class="bi bi-cash-coin"></i> Debt Management</div>
-        <div class="card-body">
-          <div class="mb-3">
-            <button class="btn btn-primary" onclick="showLoanModal()">Add Loan</button>
-          </div>
-          <div id="debtManagement"></div>
         </div>
       </div>
     </div>
@@ -466,30 +456,43 @@
         <div class="card-header"><i class="bi bi-bar-chart"></i> Analytics</div>
         <div class="card-body">
           <div class="mb-3">
-            <select id="overviewChartType" class="form-select">
-              <option value="category">Category Breakdown</option>
-              <option value="trend">Spending Trend</option>
+            <select id="overviewChartType" class="form-select" aria-label="Select chart type">
+              <option value="category">By Category</option>
+              <option value="time">Over Time</option>
             </select>
           </div>
-          <div class="row g-3">
-            <div class="col-12 col-lg-6">
-              <div class="chart-card">
-                <div class="chart-header"><i class="bi bi-bar-chart"></i> Overview</div>
-                <div class="chart-body">
-                  <canvas id="analyticsChart" height="300"></canvas>
-                </div>
-              </div>
-            </div>
-            <div class="col-12 col-lg-6">
-              <div class="chart-card">
-                <div class="chart-header"><i class="bi bi-robot"></i> AI Insights</div>
-                <div class="chart-body">
-                  <button class="btn btn-primary mb-3" onclick="showAIInsights()">View Insights</button>
-                  <div id="quickInsights"></div>
-                </div>
-              </div>
-            </div>
+          <canvas id="analyticsChart" height="300"></canvas>
+          <button class="btn btn-primary mt-3" onclick="showAIInsights()">View AI Insights</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="tab-planner" class="tab-page d-none">
+      <div class="card shadow-sm mb-4">
+        <div class="card-header"><i class="bi bi-calendar"></i> Financial Planner</div>
+        <div class="card-body">
+          <div class="mb-3 d-flex gap-3">
+            <button class="btn btn-outline-primary" onclick="showFutureIncomeModal()">Add Future Income</button>
+            <button class="btn btn-outline-primary" onclick="showFutureExpenseModal()">Add Future Expense</button>
+            <select id="plannerTimeframe" class="form-select w-auto" aria-label="Select planning timeframe">
+              <option value="1">1 Year</option>
+              <option value="3">3 Years</option>
+              <option value="5">5 Years</option>
+            </select>
           </div>
+          <div id="plannerProjections"></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="tab-debt" class="tab-page d-none">
+      <div class="card shadow-sm mb-4">
+        <div class="card-header"><i class="bi bi-bank"></i> Debt Management</div>
+        <div class="card-body">
+          <div class="mb-3">
+            <button class="btn btn-success" onclick="showLoanModal()">Add Loan</button>
+          </div>
+          <div id="debtManagement"></div>
         </div>
       </div>
     </div>
@@ -499,104 +502,61 @@
         <div class="card-header"><i class="bi bi-gear"></i> Settings</div>
         <div class="card-body">
           <div class="mb-3">
-            <div class="form-check form-switch">
-              <input class="form-check-input" type="checkbox" id="darkModeToggle" aria-label="Toggle dark mode">
-              <label class="form-check-label" for="darkModeToggle">Dark Mode</label>
-            </div>
-          </div>
-          <hr>
-          <div class="mb-3">
-            <label class="form-label">Cloud Sync</label>
-            <div class="d-flex gap-2 mb-2">
-              <button id="manualSyncSettings" class="btn btn-outline-primary btn-sm">
-                <i class="bi bi-cloud-arrow-up"></i> Sync Now
-              </button>
-              <small class="text-muted ms-2" id="syncStatusText">Sign in to sync across devices</small>
-            </div>
-          </div>
-          <hr>
-          <div class="mb-3">
-            <label class="form-label">Monthly Rollover Settings</label>
-            <div class="form-check form-switch mb-2">
-              <input class="form-check-input" type="checkbox" id="autoRolloverToggle" checked aria-label="Toggle auto-rollover">
-              <label class="form-check-label" for="autoRolloverToggle">Auto-rollover balances</label>
-            </div>
-            <div class="form-check form-switch mb-2">
-              <input class="form-check-input" type="checkbox" id="allowNegativeRollover" aria-label="Allow negative rollovers">
-              <label class="form-check-label" for="allowNegativeRollover">Allow negative rollovers</label>
-            </div>
-          </div>
-          <hr>
-          <div class="mb-3">
             <label for="currencySelect" class="form-label">Currency</label>
             <select id="currencySelect" class="form-select" aria-label="Select currency">
-              <option value="USD">USD - US Dollar</option>
-              <option value="EUR">EUR - Euro</option>
-              <option value="PKR">PKR - Pakistani Rupee</option>
+              <option value="USD">USD ($)</option>
+              <option value="EUR">EUR (€)</option>
+              <option value="GBP">GBP (£)</option>
             </select>
           </div>
+          <div class="mb-3">
+            <label for="monthBudgetInput" class="form-label">Monthly Budget</label>
+            <input type="number" id="monthBudgetInput" class="form-control" step="0.01" aria-describedby="budgetHelp">
+            <div id="budgetHelp" class="form-text">Set budget for current month</div>
+          </div>
+          <div class="mb-3 form-check">
+            <input type="checkbox" class="form-check-input" id="autoRolloverToggle">
+            <label class="form-check-label" for="autoRolloverToggle">Auto-rollover balance to next month</label>
+          </div>
+          <div class="mb-3 form-check">
+            <input type="checkbox" class="form-check-input" id="allowNegativeRollover">
+            <label class="form-check-label" for="allowNegativeRollover">Allow negative rollover</label>
+          </div>
+          <div class="mb-3 form-check">
+            <input type="checkbox" class="form-check-input" id="darkModeToggle">
+            <label class="form-check-label" for="darkModeToggle">Dark Mode</label>
+          </div>
+          <div class="mb-3">
+            <button id="exportBtn" class="btn btn-outline-primary">Export Data</button>
+            <button id="importBtn" class="btn btn-outline-primary">Import Data</button>
+            <input type="file" id="importFile" accept=".json" class="d-none">
+          </div>
           <div>
-            <button id="toggleCategorySettings" class="btn btn-outline-secondary w-100 mb-2" type="button">
-              <span id="catCollapseIcon"><i class="bi bi-chevron-right"></i></span> Category Settings
+            <button id="toggleCategorySettings" class="btn btn-link" aria-expanded="false" aria-controls="categorySettingsPanel">
+              <span id="catCollapseIcon"><i class="bi bi-chevron-right"></i></span> Manage Categories
             </button>
-            <div id="categorySettingsPanel" class="collapse">
-              <div class="input-group mb-2">
-                <input type="text" id="newCategoryInput" class="form-control" placeholder="New category" aria-label="New category">
-                <select id="newCategoryType" class="form-select" style="max-width: 120px;" aria-label="Category type">
-                  <option value="income">Income</option>
-                  <option value="expense">Expense</option>
-                </select>
-                <button id="addCategoryBtn" class="btn btn-primary" type="button"><i class="bi bi-plus"></i> Add</button>
+            <div class="collapse" id="categorySettingsPanel">
+              <div class="card card-body">
+                <div class="mb-3">
+                  <label for="newCategoryInput" class="form-label">New Category</label>
+                  <input type="text" id="newCategoryInput" class="form-control" aria-describedby="categoryTypeHelp">
+                  <select id="newCategoryType" class="form-select mt-2" aria-label="Category type">
+                    <option value="expense">Expense</option>
+                    <option value="income">Income</option>
+                  </select>
+                  <div id="categoryTypeHelp" class="form-text">Add a new category for transactions</div>
+                  <button id="addCategoryBtn" class="btn btn-success mt-2">Add Category</button>
+                </div>
+                <ul id="categoryList" class="list-group"></ul>
               </div>
-              <ul id="categoryList" class="list-group"></ul>
             </div>
           </div>
-          <hr>
-          <div>
-            <label class="form-label">Import / Export Transactions</label>
-            <div class="mb-2">
-              <button id="exportBtn" class="btn btn-outline-success btn-sm"><i class="bi bi-download"></i> Export</button>
-              <input type="file" id="importFile" accept=".json" style="display:none;">
-              <button id="importBtn" class="btn btn-outline-primary btn-sm"><i class="bi bi-upload"></i> Import</button>
-            </div>
-            <div id="importExportAlert" class="alert alert-info d-none"></div>
+          <div class="mt-3">
+            <small id="syncStatusText" class="text-muted">Sign in to sync across devices</small>
           </div>
         </div>
       </div>
     </div>
   </div>
-
-  <nav class="navbar navbar-light p-0 fixed-bottom" id="fixedNavBar" aria-label="Bottom navigation">
-    <div class="container-fluid p-0">
-      <div class="d-flex justify-content-around w-100">
-        <button class="nav-btn active" data-tab="dashboard" aria-label="Dashboard Tab" role="tab">
-          <i class="bi bi-house-door" aria-hidden="true"></i>
-          <small>Dashboard</small>
-        </button>
-        <button class="nav-btn" data-tab="transactions" aria-label="Transactions Tab" role="tab">
-          <i class="bi bi-list-ul" aria-hidden="true"></i>
-          <small>Transactions</small>
-        </button>
-        <button class="nav-btn" data-tab="planner" aria-label="Planner Tab" role="tab">
-          <i class="bi bi-calendar-check" aria-hidden="true"></i>
-          <small>Planner</small>
-        </button>
-        <button class="nav-btn" data-tab="debt" aria-label="Debt Tab" role="tab">
-          <i class="bi bi-cash-coin" aria-hidden="true"></i>
-          <small>Debt</small>
-        </button>
-        <button class="nav-btn" data-tab="analytics" aria-label="Analytics Tab" role="tab">
-          <i class="bi bi-bar-chart" aria-hidden="true"></i>
-          <small>Analytics</small>
-        </button>
-        <button class="nav-btn" data-tab="settings" aria-label="Settings Tab" role="tab">
-          <i class="bi bi-gear" aria-hidden="true"></i>
-          <small>Settings</small>
-        </button>
-      </div>
-    </div>
-  </nav>
-
-  <script type="module" src="app.js"></script>
 </body>
 </html>
