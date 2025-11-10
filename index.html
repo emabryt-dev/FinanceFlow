@@ -1,9 +1,7 @@
-
 <!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Finance Flow</title>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -156,7 +154,7 @@
         console.warn("API_KEY has not been set. AI features will be disabled. Please add your key in index.html.");
       }
 
-      const ai = new GoogleGenAI({ apiKey: API_KEY! });
+      const ai = new GoogleGenAI({ apiKey: API_KEY });
 
       const analysisSchema = {
           type: Type.OBJECT,
