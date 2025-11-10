@@ -1,0 +1,205 @@
+// Fix: Add declarations for gapi to resolve TypeScript errors.
+declare const gapi: any;
+// Fix: Add a namespace declaration for 'google' to provide types for the Google Identity Services library and resolve TypeScript errors.
+declare namespace google {
+    namespace accounts {
+        namespace oauth2 {
+            interface TokenResponse {
+                access_token: string;
+            }
+
+            interface TokenClient {
+                requestAccessToken(options?: { prompt: string }): void;
+            }
+
+            function initTokenClient(config: {
+                client_id: string;
+                scope: string;
+                callback: (tokenResponse: TokenResponse) => void;
+                error_callback?: (error: any) => void;
+            }): TokenClient;
+
+            function revoke(accessToken: string, callback: () => void): void;
+        }
+    }
+}
+
+// The user-provided Google Cloud Client ID.
+const CLIENT_ID = '86191691449-lop8lu293h8956071sr0jllc2qsdpc2e.apps.googleusercontent.com';
+
+const SCOPES = 'https://www.googleapis.com/auth/drive.file';
+const DISCOVERY_DOC = 'https://www.googleapis.com/discovery/v1/apis/drive/v3/rest';
+
+let tokenClient: google.accounts.oauth2.TokenClient | null = null;
+
+export const initGoogleClient = (callback: (tokenResponse: google.accounts.oauth2.TokenResponse) => void): Promise<void> => {
+    return new Promise((resolve, reject) => {
+        if (CLIENT_ID.startsWith('YOUR_GOOGLE_CLOUD_CLIENT_ID')) {
+             console.error("Google Drive sync is disabled. Please configure your CLIENT_ID in 'services/googleDriveService.ts'.");
+             return reject(new Error("Google Client ID is not configured."));
+        }
+        try {
+            tokenClient = google.accounts.oauth2.initTokenClient({
+                client_id: CLIENT_ID,
+                scope: SCOPES,
+                callback: callback,
+                error_callback: (error) => {
+                    console.error("Google token client error", error);
+                    // Optionally reject the promise on error
+                }
+            });
+            resolve();
+        } catch (error) {
+            console.error("Failed to initialize Google token client", error);
+            reject(error);
+        }
+    });
+};
+
+
+export const requestAccessToken = () => {
+    if (tokenClient) {
+        // Prompt the user to select a Google Account and ask for consent to share their data
+        // when establishing a new session.
+        tokenClient.requestAccessToken({ prompt: 'consent' });
+    } else {
+        console.error("Token client not initialized.");
+    }
+};
+
+export const revokeAccessToken = (accessToken: string) => {
+    if (accessToken) {
+        google.accounts.oauth2.revoke(accessToken, () => {
+            console.log('Access token revoked.');
+        });
+    }
+};
+
+
+const BACKUP_FILE_NAME = 'finance-flow-backup.json';
+
+// --- Google Drive API Helpers ---
+
+async function getGapiClient() {
+    return new Promise<any>((resolve, reject) => {
+        gapi.load('client', () => {
+            gapi.client.init({
+                discoveryDocs: [DISCOVERY_DOC],
+            }).then(() => {
+                resolve(gapi.client);
+            }).catch(reject);
+        });
+    });
+}
+
+
+async function searchForFile(fileName: string): Promise<string | null> {
+    try {
+        const client = await getGapiClient();
+        const response = await client.drive.files.list({
+            q: `name='${fileName}' and trashed=false`,
+            spaces: 'drive',
+            fields: 'files(id, name)',
+        });
+
+        if (response.result.files && response.result.files.length > 0) {
+            return response.result.files[0].id;
+        }
+        return null;
+    } catch (error) {
+        console.error('Error searching for file:', error);
+        throw new Error('Could not search for backup file.');
+    }
+}
+
+async function createFile(fileName: string, content: string): Promise<string> {
+    try {
+        const client = await getGapiClient();
+        const boundary = '-------314159265358979323846';
+        const delimiter = `\r\n--${boundary}\r\n`;
+        const close_delim = `\r\n--${boundary}--`;
+
+        const metadata = {
+            name: fileName,
+            mimeType: 'application/json',
+        };
+
+        const multipartRequestBody =
+            delimiter +
+            'Content-Type: application/json\r\n\r\n' +
+            JSON.stringify(metadata) +
+            delimiter +
+            'Content-Type: application/json\r\n\r\n' +
+            content +
+            close_delim;
+
+        const response = await client.request({
+            path: 'https://www.googleapis.com/upload/drive/v3/files',
+            method: 'POST',
+            params: { uploadType: 'multipart' },
+            headers: {
+                'Content-Type': `multipart/related; boundary=${boundary}`,
+            },
+            body: multipartRequestBody,
+        });
+
+        return response.result.id;
+    } catch (error) {
+        console.error('Error creating file:', error);
+        throw new Error('Could not create backup file.');
+    }
+}
+
+async function updateFile(fileId: string, content: string): Promise<void> {
+    try {
+        const client = await getGapiClient();
+        await client.request({
+            path: `https://www.googleapis.com/upload/drive/v3/files/${fileId}`,
+            method: 'PATCH',
+            params: { uploadType: 'media' },
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: content,
+        });
+    } catch (error) {
+        console.error('Error updating file:', error);
+        throw new Error('Could not update backup file.');
+    }
+}
+
+async function getFileContent(fileId: string): Promise<string> {
+    try {
+        const client = await getGapiClient();
+        const response = await client.drive.files.get({
+            fileId: fileId,
+            alt: 'media',
+        });
+        return response.body;
+    } catch (error) {
+        console.error('Error getting file content:', error);
+        throw new Error('Could not read backup file.');
+    }
+}
+
+// --- Main Service Functions ---
+
+export const backupToDrive = async (data: any): Promise<void> => {
+    const content = JSON.stringify(data, null, 2);
+    const fileId = await searchForFile(BACKUP_FILE_NAME);
+
+    if (fileId) {
+        await updateFile(fileId, content);
+    } else {
+        await createFile(BACKUP_FILE_NAME, content);
+    }
+};
+
+export const restoreFromDrive = async (): Promise<any> => {
+    const fileId = await searchForFile(BACKUP_FILE_NAME);
+    if (!fileId) {
+        throw new Error('No backup file found in your Google Drive.');
+    }
+    const content = await getFileContent(fileId);
+    return JSON.parse(content);
+};
