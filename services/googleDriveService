@@ -1,6 +1,6 @@
-// Fix: Add declarations for gapi to resolve TypeScript errors.
+// Add declarations for gapi to resolve TypeScript errors.
 declare const gapi: any;
-// Fix: Add a namespace declaration for 'google' to provide types for the Google Identity Services library and resolve TypeScript errors.
+// Add a namespace declaration for 'google' to provide types for the Google Identity Services library and resolve TypeScript errors.
 declare namespace google {
     namespace accounts {
         namespace oauth2 {
@@ -24,7 +24,11 @@ declare namespace google {
     }
 }
 
-// The user-provided Google Cloud Client ID.
+// --- IMPORTANT ---
+// PASTE YOUR GOOGLE CLOUD CLIENT ID HERE.
+// WARNING: This is NOT secure for a public website if your repository is public.
+// Your ID will be visible to anyone who views the source code.
+// It is strongly recommended to keep your repository PRIVATE.
 const CLIENT_ID = '86191691449-lop8lu293h8956071sr0jllc2qsdpc2e.apps.googleusercontent.com';
 
 const SCOPES = 'https://www.googleapis.com/auth/drive.file';
@@ -45,7 +49,6 @@ export const initGoogleClient = (callback: (tokenResponse: google.accounts.oauth
                 callback: callback,
                 error_callback: (error) => {
                     console.error("Google token client error", error);
-                    // Optionally reject the promise on error
                 }
             });
             resolve();
@@ -59,8 +62,6 @@ export const initGoogleClient = (callback: (tokenResponse: google.accounts.oauth
 
 export const requestAccessToken = () => {
     if (tokenClient) {
-        // Prompt the user to select a Google Account and ask for consent to share their data
-        // when establishing a new session.
         tokenClient.requestAccessToken({ prompt: 'consent' });
     } else {
         console.error("Token client not initialized.");
