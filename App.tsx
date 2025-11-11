@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef, useLayoutEffect } from 'react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, PieChart, Pie, Legend, LineChart, Line, CartesianGrid } from 'recharts';
-import { Transaction, Category, Loan, LoanType, FutureTransaction, AIAnalysis, TransactionType, MonthlyBudget, PlannerItemType, PlannerFrequency, SalaryCalculationDetails, LoanPayment } from './types';
-import { generateAIAnalysis, suggestCategory } from './services/geminiService';
-import * as GoogleDriveService from './services/googleDriveService';
+import { Transaction, Category, Loan, LoanType, FutureTransaction, AIAnalysis, TransactionType, MonthlyBudget, PlannerItemType, PlannerFrequency, SalaryCalculationDetails, LoanPayment } from './types.ts';
+import { generateAIAnalysis, suggestCategory } from './services/geminiService.ts';
+import * as GoogleDriveService from './services/googleDriveService.ts';
 
 // Add declaration for gapi to resolve TypeScript errors.
 declare const gapi: any;
