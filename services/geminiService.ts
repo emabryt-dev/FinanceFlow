@@ -1,11 +1,15 @@
-
 import { GoogleGenAI, Type } from "@google/genai";
 import { Transaction, Category, AIAnalysis } from '../types';
 
-const API_KEY = process.env.API_KEY;
+// --- IMPORTANT ---
+// PASTE YOUR GEMINI API KEY HERE.
+// WARNING: This is NOT secure for a public website if your repository is public.
+// Your key will be visible to anyone who views the source code.
+// It is strongly recommended to keep your repository PRIVATE.
+const API_KEY = 'YOUR_GEMINI_API_KEY_HERE';
 
-if (!API_KEY) {
-  console.warn("API_KEY environment variable not set. AI features will be disabled.");
+if (!API_KEY || API_KEY === 'YOUR_GEMINI_API_KEY_HERE') {
+  console.warn("Gemini API key has not been set. AI features will be disabled. Please add your key in services/geminiService.ts.");
 }
 
 const ai = new GoogleGenAI({ apiKey: API_KEY! });
@@ -51,7 +55,7 @@ const analysisSchema = {
 
 
 export const generateAIAnalysis = async (transactions: Transaction[], currency: string): Promise<AIAnalysis> => {
-  if (!API_KEY) {
+  if (!API_KEY || API_KEY === 'YOUR_GEMINI_API_KEY_HERE') {
     throw new Error("Gemini API key is not configured.");
   }
 
@@ -103,7 +107,7 @@ export const generateAIAnalysis = async (transactions: Transaction[], currency: 
 };
 
 export const suggestCategory = async (description: string, categories: Category[]): Promise<string> => {
-  if (!API_KEY) {
+  if (!API_KEY || API_KEY === 'YOUR_GEMINI_API_KEY_HERE') {
     throw new Error("Gemini API key is not configured.");
   }
   if (categories.length === 0) {
