@@ -29,7 +29,7 @@ declare namespace google {
 // WARNING: This is NOT secure for a public website if your repository is public.
 // Your ID will be visible to anyone who views the source code.
 // It is strongly recommended to keep your repository PRIVATE.
-const CLIENT_ID = '86191691449-lop8lu293h8956071sr0jllc2qsdpc2e.apps.googleusercontent.com';
+const CLIENT_ID = 'YOUR_GOOGLE_CLOUD_CLIENT_ID_HERE';
 
 const SCOPES = 'https://www.googleapis.com/auth/drive.file';
 const DISCOVERY_DOC = 'https://www.googleapis.com/discovery/v1/apis/drive/v3/rest';
