@@ -1,5 +1,5 @@
 import { GoogleGenAI, Type } from "@google/genai";
-import { Transaction, Category, AIAnalysis } from '../types';
+import { Transaction, Category, AIAnalysis } from '../types.ts';
 
 // --- IMPORTANT ---
 // PASTE YOUR GEMINI API KEY HERE.
