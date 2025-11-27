@@ -1,21 +1,23 @@
 {
-  "name": "Finance Flow",
-  "short_name": "FinanceFlow",
-  "description": "A personal finance manager that provides powerful tracking, planning, and AI-driven analytics to help you manage your finances.",
-  "start_url": ".",
+  "id": "/Wealth-Command/",
+  "name": "Wealth Command Pro",
+  "short_name": "WealthCommand",
+  "description": "Expense and Income Manager",
+  "start_url": "./",
+  "scope": "./",
   "display": "standalone",
-  "background_color": "#F8F9FA",
-  "theme_color": "#4361EE",
+  "background_color": "#ffffff",
+  "theme_color": "#3b82f6",
   "icons": [
     {
-      "src": "data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' width='192' height='192'%3e%3ctext y='.9em' font-size='90'%3e💸%3c/text%3e%3c/svg%3e",
+      "src": "https://cdn-icons-png.flaticon.com/512/2382/2382461.png",
       "sizes": "192x192",
-      "type": "image/svg+xml"
+      "type": "image/png"
     },
     {
-      "src": "data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' width='512' height='512'%3e%3ctext y='.9em' font-size='90'%3e💸%3c/text%3e%3c/svg%3e",
+      "src": "https://cdn-icons-png.flaticon.com/512/2382/2382461.png",
       "sizes": "512x512",
-      "type": "image/svg+xml"
+      "type": "image/png"
     }
   ]
 }
